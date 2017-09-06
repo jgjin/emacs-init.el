@@ -52,6 +52,7 @@
  '(inhibit-startup-screen t)
  '(kept-new-versions 6)
  '(kept-old-versions 2)
+ '(org-agenda-files (quote ("~/.emacs.d/calender/test.org")))
  '(package-selected-packages
    (quote
     (origami flycheck-rust rust-mode iedit zzz-to-char yasnippet use-package spacemacs-theme smartparens scala-mode rainbow-delimiters powerline magit json-mode hungry-delete helm-swoop helm-projectile helm-mt helm-descbinds flycheck fill-column-indicator expand-region dumb-jump dashboard csv-mode company-quickhelp company-jedi company-irony-c-headers company-irony company-c-headers bm benchmark-init)))
@@ -231,8 +232,8 @@
 ^^^^^^-----------------------------------------------
 Normal  _p_ Point    _q_ In ''     _u_       Url
         _w_ Word     _Q_ Out ''    _c_       Comment
-        _s_ Symbol   _(_ In Pair   _t_       In Tag
-        _S_ Pre+sym  _)_ Out Pair  _T_       Out Tag
+        _s_ Symbol   _i_ In Pair   _t_       In Tag
+        _S_ Pre+sym  _o_ Out Pair  _T_       Out Tag
         _c_ Call     _b_ Block     _C-SPC_   Expand
         _a_ Accessor _f_ Function  _C-M-SPC_ Contract
                    _r_ Rectangle
@@ -261,12 +262,8 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("a" er/mark-next-accessor)
     ("q" er/mark-inside-quotes)
     ("Q" er/mark-outside-quotes)
-    ("(" er/mark-inside-pairs)
-    ("[" er/mark-inside-pairs)
-    ("{" er/mark-inside-pairs)
-    (")" er/mark-outside-pairs)
-    ("]" er/mark-outside-pairs)
-    ("}" er/mark-outside-pairs)
+    ("i" er/mark-inside-pairs)
+    ("o" er/mark-inside-pairs)
     ("b" mark-sexp)
     ("d" er/mark-defun)
     ("f" er/mark-defun)
@@ -280,7 +277,8 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("C-z" undo)
     ("C-c" (lambda () (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark) (hydra-kill-ring/body)) :exit t)
     ("C-x" (lambda () (interactive) (kill-region (region-beginning) (region-end)) (hydra-kill-ring/body)) :exit t)
-    ("C-M-d" duplicate-line-or-region :exit t)))
+    ("C-M-d" duplicate-line-or-region :exit t)
+    ("O" hydra-org/body :exit t)))
 
 (use-package fill-column-indicator
   :ensure t
@@ -434,11 +432,11 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     (:foreign-keys nil
      :hint nil)
      "
-^Navigate^     ^Window^     ^Split^         ^Buffer^
+^Navigate^     ^Window^      ^Split^          ^Buffer^
 ^^^^^^^^---------------------------------------------------
-_M-w_ Scroll ↑ _C-w_ Move ↑ _C-M-w_ Split ↑ _b_   Buffers
+_M-w_ Scroll ↑ _C-w_ Move ↑  _C-M-w_ Split ↑  _b_   Buffers
 _M-a_ Prev Buf _C-a_ Move ← _C-M-a_ Split ← _t_   Terminals
-_M-s_ Scroll ↓ _C-s_ Move ↓ _C-M-s_ Split ↓ _C-f_ Files
+_M-s_ Scroll ↓ _C-s_ Move ↓  _C-M-s_ Split ↓  _C-f_ Files
 _M-d_ Next Buf _C-d_ Move → _C-M-d_ Split → _RET_ Select
 _M-f_ Find     _d_   Del
              _f_   Focus
@@ -496,7 +494,8 @@ _C-a_ Mark All
     ("w" write-file)
     ("i" insert-file)
     ("C-v" yank-and-indent :exit t)
-    ("C-w" hydra-buffer-and-window/body :exit t))
+    ("C-w" hydra-buffer-and-window/body :exit t)
+    ("O" hydra-org/body :exit t))
   
   (defhydra hydra-kill-ring
     (:foreign-keys nil
@@ -530,7 +529,8 @@ _C-r_ Ring
     ("RET" newline)
     ("C-v" yank-and-indent :exit t)
     ("C-d" duplicate-line-or-region :exit t)
-    ("C-r" helm-show-kill-ring :exit t)))
+    ("C-r" helm-show-kill-ring :exit t)
+    ("O" hydra-org/body :exit t)))
 
 (use-package iedit
   :ensure t
@@ -596,7 +596,94 @@ _C-r_ Ring
 	  ("C-r" . term-send-reverse-search-history))))
 
 (use-package org
-  :ensure t)
+  :ensure t
+  :config
+  (defhydra hydra-org
+    (:foreign-keys nil
+     :hint nil
+     :idle 0.25)
+     "
+^Kill^      ^Narrow^    ^Agenda^
+^^^^^^---------------------------
+_C-x_ Cut   _b_ Block   _v_ Views
+_C-c_ Copy  _e_ Element _l_ List
+_C-v_ Paste _s_ Subtree _a_ Add
+_C-r_ Ring  _w_ Widen   _r_ Rem
+    "
+    ("M-w" previous-line)
+    ("M-a" left-char)
+    ("M-s" next-line)
+    ("M-d" right-char)
+    ("<up>" previous-line-message)
+    ("<left>" left-char-message)
+    ("<down>" next-line-message)
+    ("<right>" right-char-message)
+    ("M-q" sp-beginning-of-sexp)
+    ("M-e" sp-end-of-sexp)
+    ("C-w" beginning-of-buffer)
+    ("C-a" sp-backward-symbol)
+    ("C-s" end-of-buffer)
+    ("C-d" sp-forward-symbol)
+    ("C-q" cua-scroll-down)
+    ("C-e" cua-scroll-up)
+    ("<M-return>" org-insert-heading)
+    ("<C-return>" org-insert-heading-respect-content)
+    ("<M-S-return>" org-insert-todo-heading)
+    ("<C-S-return>" org-insert-todo-heading-respect-content)
+    ("<tab>" org-cycle)
+    ("<M-left>" org-do-promote)
+    ("<M-right>" org-do-demote)
+    ("<C-left>" org-promote-subtree)
+    ("<C-right>" org-demote-subtree)
+    ("<C-up>" org-move-subtree-up)
+    ("<C-down>" org-move-subtree-down)
+    ("C-z" undo)
+    ("C-x" org-cut-subtree)
+    ("C-c" org-copy-subtree)
+    ("C-v" org-yank)
+    ("b" org-narrow-block)
+    ("e" org-narrow-element)
+    ("s" org-narrow-subtree)
+    ("w" widen)
+    ("l" org-agenda-list)
+    ("a" org-agenda-file-to-front)
+    ("r" org-remove-file)
+    ("C-r" helm-show-kill-ring :exit t)
+    ("C-x" hydra-control-x-prefix/body :exit t)
+    ("v" hydra-org-agenda/body :exit t))
+
+  (defhydra hydra-org-agenda
+    (:foreign-keys nil
+     :hint nil
+     :idle 0.25)
+    "
+^Actions^
+^^----------
+_T_ Todo
+_t_ Tags
+_l_ Timeline
+_s_ Search
+    "
+    ("T" (lambda () (interactive) (org-todo-list) (hydra-org/body)) :exit t)
+    ("t" (lambda () (interactive) (org-tags-view) (hydra-org/body)) :exit t)
+    ("l" (lambda () (interactive) (org-timeline) (hydra-org/body)) :exit t)
+    ("s" (lambda () (interactive) (org-search-view) (hydra-org/body)) :exit t))
+    
+  :bind
+  (:map org-mode-map
+	("<M-return>" . org-insert-heading)
+	("<C-return>" . org-insert-heading-respect-content)
+	("<M-S-return>" . org-insert-todo-heading)
+	("<C-S-return>" . org-insert-todo-heading-respect-content)
+	("<tab>" . org-cycle)
+	("<M-left>" . org-do-promote)
+	("<M-right>" . org-do-demote)
+	("<C-left>" . org-promote-subtree)
+	("<C-right>" . org-demote-subtree)
+	("<C-up>" . org-move-subtree-up)
+	("<C-down>" . org-move-subtree-down)
+	("M-SPC" . org-mark-element)
+	("C-M-SPC" . org-mark-subtree)))
 
 (use-package origami
   :ensure t
