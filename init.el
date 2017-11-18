@@ -72,6 +72,7 @@
 ;; (set-face-attribute 'default t :font FONT)
 
 ;; Enable use-package
+;; See https://github.com/jwiegley/use-package for explanation
 (eval-when-compile
   (require 'use-package))
 (require 'diminish)
@@ -81,10 +82,18 @@
   :ensure t
   :config
   ;; Set package-related faces (colors)
-  (set-face-foreground 'avy-lead-face "#4f97d7")
-  (set-face-foreground 'avy-lead-face-0 "#2d9574")
-  (set-face-foreground 'avy-lead-face-1 "#4f97d7")
-  (set-face-foreground 'avy-lead-face-2 "#2d9574")
+  (set-face-attribute 'avy-lead-face nil
+		      :foreground "#86dc2f" :background "#444444")
+  (set-face-attribute 'avy-lead-face-0 nil
+		      :foreground "#86dc2f" :background "#444444")
+  (set-face-attribute 'avy-lead-face-1 nil
+		      :foreground "#86dc2f" :background "#444444")
+  (set-face-attribute 'avy-lead-face-2 nil
+		      :foreground "#86dc2f" :background "#444444")
+  ;; (set-face-foreground 'avy-lead-face "#86dc2f")
+  ;; (set-face-foreground 'avy-lead-face-0 "#86dc2f")
+  ;; (set-face-foreground 'avy-lead-face-1 "#86dc2f")
+  ;; (set-face-foreground 'avy-lead-face-2 "#86dc2f")
 
   :bind
   (("M-k" . avy-goto-char-timer)
@@ -247,10 +256,10 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("M-a" left-char)
     ("M-s" next-line)
     ("M-d" right-char)
-    ("<up>" previous-line) # May use previous-line-message in future
-    ("<left>" left-char) # May use left-char-message in future
-    ("<down>" next-line) # May use next-line-message in future
-    ("<right>" right-char) # May use right-char-message in future
+    ("<up>" previous-line) ;; May use previous-line-message in future
+    ("<left>" left-char) ;; May use left-char-message in future
+    ("<down>" next-line) ;; May use next-line-message in future
+    ("<right>" right-char) ;; May use right-char-message in future
     ("M-q" sp-beginning-of-sexp)
     ("M-e" sp-end-of-sexp)
     ("C-w" beginning-of-buffer)
@@ -517,10 +526,10 @@ _C-r_ Ring
     ("M-a" left-char)
     ("M-s" next-line)
     ("M-d" right-char)
-    ("<up>" previous-line) # May use previous-line-message in future
-    ("<left>" left-char) # May use left-char-message in future
-    ("<down>" next-line) # May use next-line-message in future
-    ("<right>" right-char) # May use right-char-message in future
+    ("<up>" previous-line) ;; May use previous-line-message in future
+    ("<left>" left-char) ;; May use left-char-message in future
+    ("<down>" next-line) ;; May use next-line-message in future
+    ("<right>" right-char) ;; May use right-char-message in future
     ("M-q" sp-beginning-of-sexp)
     ("M-e" sp-end-of-sexp)
     ("C-w" beginning-of-buffer)
@@ -619,10 +628,10 @@ _C-r_ Ring  _w_ Widen   _r_ Rem
     ("M-a" left-char)
     ("M-s" next-line)
     ("M-d" right-char)
-    ("<up>" previous-line) # May use previous-line-message in future
-    ("<left>" left-char) # May use left-char-message in future
-    ("<down>" next-line) # May use next-line-message in future
-    ("<right>" right-char) # May use right-char-message in future
+    ("<up>" previous-line) ;; May use previous-line-message in future
+    ("<left>" left-char) ;; May use left-char-message in future
+    ("<down>" next-line) ;; May use next-line-message in future
+    ("<right>" right-char) ;; May use right-char-message in future
     ("M-q" sp-beginning-of-sexp)
     ("M-e" sp-end-of-sexp)
     ("C-w" beginning-of-buffer)
@@ -1019,10 +1028,10 @@ _s_ Search
 (global-set-key (kbd "M-w") 'previous-line)
 (global-set-key (kbd "M-d") 'right-char)
 (global-set-key (kbd "M-a") 'left-char)
-(global-set-key (kbd "<left>") 'left-char) # May use left-char-message in future
-(global-set-key (kbd "<right>") 'right-char) # May use right-char-message in future
-(global-set-key (kbd "<up>") 'previous-line) # May use previous-line-message in future
-(global-set-key (kbd "<down>") 'next-line) # May use next-line-message in future
+(global-set-key (kbd "<left>") 'left-char) ;; May use left-char-message in future
+(global-set-key (kbd "<right>") 'right-char) ;; May use right-char-message in future
+(global-set-key (kbd "<up>") 'previous-line) ;; May use previous-line-message in future
+(global-set-key (kbd "<down>") 'next-line) ;; May use next-line-message in future
 (global-set-key (kbd "C-s") 'end-of-buffer)
 (global-set-key (kbd "C-w") 'beginning-of-buffer)
 (global-set-key (kbd "C-S-d") 'kill-whole-line)
