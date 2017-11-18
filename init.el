@@ -52,10 +52,10 @@
  '(inhibit-startup-screen t)
  '(kept-new-versions 6)
  '(kept-old-versions 2)
- '(org-agenda-files (quote ("~/.emacs.d/calender/test.org")))
+ '(org-agenda-files nil)
  '(package-selected-packages
    (quote
-    (origami flycheck-rust rust-mode iedit zzz-to-char yasnippet use-package spacemacs-theme smartparens scala-mode rainbow-delimiters powerline magit json-mode hungry-delete helm-swoop helm-projectile helm-mt helm-descbinds flycheck fill-column-indicator expand-region dumb-jump dashboard csv-mode company-quickhelp company-jedi company-irony-c-headers company-irony company-c-headers bm benchmark-init)))
+    (pdf-tools package-build shut-up epl git commander f dash s origami flycheck-rust rust-mode iedit zzz-to-char yasnippet use-package spacemacs-theme smartparens scala-mode rainbow-delimiters powerline magit json-mode hungry-delete helm-swoop helm-projectile helm-mt helm-descbinds flycheck fill-column-indicator expand-region dumb-jump dashboard csv-mode company-quickhelp company-jedi company-irony-c-headers company-irony company-c-headers bm benchmark-init)))
  '(version-control t))
 
 ;; Set non-package faces (colors)
@@ -68,6 +68,8 @@
 
 ;; Set font size
 (set-face-attribute 'default nil :height 240)
+;; Font type set in .Xresources, could be set here
+;; (set-face-attribute 'default t :font FONT)
 
 ;; Enable use-package
 (eval-when-compile
@@ -126,6 +128,9 @@
   (("C-b" . bm-toggle)
    ("C-M-b" . bm-next)
    ("M-b" . bm-previous)))
+
+;; (use-package cask
+;;   :ensure t)
 
 (use-package company
   :ensure t
@@ -187,7 +192,7 @@
   ;; Set greeting message
   (setq dashboard-banner-logo-title "Welcome to Jason's BananaMacs!")
   ;; ;; Set dashboard image
-  ;; (setq dashboard-startup-banner "~/.emacs.d/banana.png")
+  (setq dashboard-startup-banner "~/.emacs.d/banana.png")
   ;; Set dashboard items
   (setq dashboard-items '((recents . 10)
                           (bookmarks . 0)
@@ -242,10 +247,10 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("M-a" left-char)
     ("M-s" next-line)
     ("M-d" right-char)
-    ("<up>" previous-line-message)
-    ("<left>" left-char-message)
-    ("<down>" next-line-message)
-    ("<right>" right-char-message)
+    ("<up>" previous-line) # May use previous-line-message in future
+    ("<left>" left-char) # May use left-char-message in future
+    ("<down>" next-line) # May use next-line-message in future
+    ("<right>" right-char) # May use right-char-message in future
     ("M-q" sp-beginning-of-sexp)
     ("M-e" sp-end-of-sexp)
     ("C-w" beginning-of-buffer)
@@ -512,10 +517,10 @@ _C-r_ Ring
     ("M-a" left-char)
     ("M-s" next-line)
     ("M-d" right-char)
-    ("<up>" previous-line-message)
-    ("<left>" left-char-message)
-    ("<down>" next-line-message)
-    ("<right>" right-char-message)
+    ("<up>" previous-line) # May use previous-line-message in future
+    ("<left>" left-char) # May use left-char-message in future
+    ("<down>" next-line) # May use next-line-message in future
+    ("<right>" right-char) # May use right-char-message in future
     ("M-q" sp-beginning-of-sexp)
     ("M-e" sp-end-of-sexp)
     ("C-w" beginning-of-buffer)
@@ -554,46 +559,46 @@ _C-r_ Ring
   :bind
   ("M-g" . magit-status))
 
-;; https://www.emacswiki.org/emacs/MultiTerm
-;; http://rawsyntax.com/blog/learn-emacs-zsh-and-multi-term
-(use-package multi-term
-  :ensure t
-  :config
-  ;; Set zsh as default shell
-  (setq multi-term-program "/usr/bin/zsh")
-  ;; Set term buffer max size to 8192 lines
-  (add-hook 'term-mode-hook
-            (lambda ()
-              (setq term-buffer-maximum-size 8192)))
+;; ;; https://www.emacswiki.org/emacs/MultiTerm
+;; ;; http://rawsyntax.com/blog/learn-emacs-zsh-and-multi-term
+;; (use-package multi-term
+;;   :ensure t
+;;   :config
+;;   ;; Set zsh as default shell
+;;   (setq multi-term-program "/usr/bin/zsh")
+;;   ;; Set term buffer max size to 8192 lines
+;;   (add-hook 'term-mode-hook
+;;             (lambda ()
+;;               (setq term-buffer-maximum-size 8192)))
 
-  ;; :bind term-raw-map/term-mode-map does not work
-  ;; These custom variables must be set instead
-  (setq term-unbind-key-list
-	'("C-c" "C-x" "C-h" "C-p"))
+;;   ;; :bind term-raw-map/term-mode-map does not work
+;;   ;; These custom variables must be set instead
+;;   (setq term-unbind-key-list
+;; 	'("C-c" "C-x" "C-h" "C-p"))
 
-  (setq term-bind-key-alist
-	'(("C-M-c" . term-kill-subjob)
-	  ("M-w" . previous-line)
-	  ("M-s" . next-line)
-	  ("C-f" . helm-swoop)
-	  ;; ("C-m" . term-send-raw)
-	  ;; ("M-f" . term-send-forward-word)
-	  ;; ("M-b" . term-send-backward-word)
-	  ;; ("M-o" . term-send-backspace)
-	  ;; ("M-p" . term-send-up)
-	  ;; ("M-n" . term-send-down)
-	  ;; ("M-M" . term-send-forward-kill-word)
-	  ;; ("M-N" . term-send-backward-kill-word)
-	  ;; ("M-," . term-send-input)
-	  ;; ("M-." . comint-dynamic-complete))
-	  ("C-c <left>" . multi-term-prev)
-	  ("C-c <right>" . multi-term-next)
-	  ;; ("C-c C-c" . term-copy-ish?)
-	  ;; ("C-c C-x" . term-cut-ish?)
-	  ("C-c C-v" . term-paste)
-	  ("M-x" . helm-M-x)
-	  ("<escape> <escape>" . term-send-esc)
-	  ("C-r" . term-send-reverse-search-history))))
+;;   (setq term-bind-key-alist
+;; 	'(("C-M-c" . term-kill-subjob)
+;; 	  ("M-w" . previous-line)
+;; 	  ("M-s" . next-line)
+;; 	  ("C-f" . helm-swoop)
+;; 	  ;; ("C-m" . term-send-raw)
+;; 	  ;; ("M-f" . term-send-forward-word)
+;; 	  ;; ("M-b" . term-send-backward-word)
+;; 	  ;; ("M-o" . term-send-backspace)
+;; 	  ;; ("M-p" . term-send-up)
+;; 	  ;; ("M-n" . term-send-down)
+;; 	  ;; ("M-M" . term-send-forward-kill-word)
+;; 	  ;; ("M-N" . term-send-backward-kill-word)
+;; 	  ;; ("M-," . term-send-input)
+;; 	  ;; ("M-." . comint-dynamic-complete))
+;; 	  ("C-c <left>" . multi-term-prev)
+;; 	  ("C-c <right>" . multi-term-next)
+;; 	  ;; ("C-c C-c" . term-copy-ish?)
+;; 	  ;; ("C-c C-x" . term-cut-ish?)
+;; 	  ("C-c C-v" . term-paste)
+;; 	  ("M-x" . helm-M-x)
+;; 	  ("<escape> <escape>" . term-send-esc)
+;; 	  ("C-r" . term-send-reverse-search-history))))
 
 (use-package org
   :ensure t
@@ -614,10 +619,10 @@ _C-r_ Ring  _w_ Widen   _r_ Rem
     ("M-a" left-char)
     ("M-s" next-line)
     ("M-d" right-char)
-    ("<up>" previous-line-message)
-    ("<left>" left-char-message)
-    ("<down>" next-line-message)
-    ("<right>" right-char-message)
+    ("<up>" previous-line) # May use previous-line-message in future
+    ("<left>" left-char) # May use left-char-message in future
+    ("<down>" next-line) # May use next-line-message in future
+    ("<right>" right-char) # May use right-char-message in future
     ("M-q" sp-beginning-of-sexp)
     ("M-e" sp-end-of-sexp)
     ("C-w" beginning-of-buffer)
@@ -979,6 +984,13 @@ _s_ Search
 ;;   (kill-line)
 ;;   (hydra-kill-ring/body))
 
+;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
+(defadvice find-file (after find-file-sudo activate)
+  "Find file as root if necessary."
+  (unless (and buffer-file-name
+               (file-writable-p buffer-file-name))
+    (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
 ;; Set overriding non-package personal keybindings
 (bind-keys*
  ((kbd "C-M-a") . beginning-of-line)
@@ -1001,17 +1013,16 @@ _s_ Search
  ((kbd "C-x") . hydra-control-x-prefix/body)
  ((kbd "C-c") . hydra-kill-ring/body)
  ((kbd "C-k") . kill-line))
- 
 
 ;; Set non-overriding personal keybindings
 (global-set-key (kbd "M-s") 'next-line)
 (global-set-key (kbd "M-w") 'previous-line)
 (global-set-key (kbd "M-d") 'right-char)
 (global-set-key (kbd "M-a") 'left-char)
-(global-set-key (kbd "<left>") 'left-char-message)
-(global-set-key (kbd "<right>") 'right-char-message)
-(global-set-key (kbd "<up>") 'previous-line-message)
-(global-set-key (kbd "<down>") 'next-line-message)
+(global-set-key (kbd "<left>") 'left-char) # May use left-char-message in future
+(global-set-key (kbd "<right>") 'right-char) # May use right-char-message in future
+(global-set-key (kbd "<up>") 'previous-line) # May use previous-line-message in future
+(global-set-key (kbd "<down>") 'next-line) # May use next-line-message in future
 (global-set-key (kbd "C-s") 'end-of-buffer)
 (global-set-key (kbd "C-w") 'beginning-of-buffer)
 (global-set-key (kbd "C-S-d") 'kill-whole-line)
