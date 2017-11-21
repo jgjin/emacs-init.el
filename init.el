@@ -90,10 +90,6 @@
 		      :foreground "#86dc2f" :background "#444444")
   (set-face-attribute 'avy-lead-face-2 nil
 		      :foreground "#86dc2f" :background "#444444")
-  ;; (set-face-foreground 'avy-lead-face "#86dc2f")
-  ;; (set-face-foreground 'avy-lead-face-0 "#86dc2f")
-  ;; (set-face-foreground 'avy-lead-face-1 "#86dc2f")
-  ;; (set-face-foreground 'avy-lead-face-2 "#86dc2f")
 
   :bind
   (("M-k" . avy-goto-char-timer)
@@ -289,8 +285,8 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("C-SPC" (er/expand-region 1))
     ("C-M-SPC" (er/contract-region 1))
     ("C-z" undo)
-    ("C-c" (lambda () (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark) (hydra-kill-ring/body)) :exit t)
-    ("C-x" (lambda () (interactive) (kill-region (region-beginning) (region-end)) (hydra-kill-ring/body)) :exit t)
+    ("C-c" (lambda() (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark) (hydra-kill-ring/body)) :exit t)
+    ("C-x" (lambda() (interactive) (kill-region (region-beginning) (region-end)) (hydra-kill-ring/body)) :exit t)
     ("C-M-d" duplicate-line-or-region :exit t)
     ("O" hydra-org/body :exit t)))
 
@@ -322,7 +318,7 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
   (add-hook 'after-init-hook #'global-flycheck-mode)
   ;; Try to set c++ standard to c++11
   (add-hook 'c++-mode-hook
-            (lambda ()
+            (lambda()
               (setq flycheck-gcc-language-standard "c++11"))))
 
 (use-package flycheck-rust
@@ -577,7 +573,7 @@ _C-r_ Ring
 ;;   (setq multi-term-program "/usr/bin/zsh")
 ;;   ;; Set term buffer max size to 8192 lines
 ;;   (add-hook 'term-mode-hook
-;;             (lambda ()
+;;             (lambda()
 ;;               (setq term-buffer-maximum-size 8192)))
 
 ;;   ;; :bind term-raw-map/term-mode-map does not work
@@ -678,10 +674,10 @@ _t_ Tags
 _l_ Timeline
 _s_ Search
     "
-    ("T" (lambda () (interactive) (org-todo-list) (hydra-org/body)) :exit t)
-    ("t" (lambda () (interactive) (org-tags-view) (hydra-org/body)) :exit t)
-    ("l" (lambda () (interactive) (org-timeline) (hydra-org/body)) :exit t)
-    ("s" (lambda () (interactive) (org-search-view) (hydra-org/body)) :exit t))
+    ("T" (lambda() (interactive) (org-todo-list) (hydra-org/body)) :exit t)
+    ("t" (lambda() (interactive) (org-tags-view) (hydra-org/body)) :exit t)
+    ("l" (lambda() (interactive) (org-timeline) (hydra-org/body)) :exit t)
+    ("s" (lambda() (interactive) (org-search-view) (hydra-org/body)) :exit t))
     
   :bind
   (:map org-mode-map
@@ -818,7 +814,7 @@ _s_ Search
 ;; Create header guards with f12
 (global-set-key
  [f12]
- '(lambda ()
+ '(lambda()
     (interactive)
     (if (buffer-file-name)
         (let*
@@ -1006,8 +1002,10 @@ _s_ Search
  ((kbd "C-M-d") . end-of-line)
  ((kbd "C-q") . scroll-down-command)
  ((kbd "C-M-q") . beginning-of-defun)
+ ((kbd "C-S-q") . (lambda() (interactive) (other-window 1)))
  ((kbd "C-e") . scroll-up-command)
  ((kbd "C-M-e") . end-of-defun)
+ ((kbd "C-S-e") . (lambda() (interactive) (other-window -1)))
  ((kbd "M-v") . yank-pop)
  ((kbd "C-M-v") . yank-pop-reverse)
  ((kbd "M-f") . goto-line)
