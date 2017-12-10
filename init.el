@@ -170,7 +170,7 @@
   (add-hook 'python-mode-hook (lambda()
                                 (add-to-list 'company-backends 'company-jedi)))
   (setq python-shell-interpreter "/usr/bin/python")
-  (setq python-shell-interpreter-args "-O -3"))
+  (setq python-shell-interpreter-args "-O"))
 
 (use-package company-quickhelp
   :ensure t
@@ -256,12 +256,12 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("<left>" left-char) ;; May use left-char-message in future
     ("<down>" next-line) ;; May use next-line-message in future
     ("<right>" right-char) ;; May use right-char-message in future
-    ("M-q" sp-beginning-of-sexp)
-    ("M-e" sp-end-of-sexp)
+    ("M-q" sp-next-sexp)
+    ("M-e" sp-previous-sexp)
     ("C-w" beginning-of-buffer)
-    ("C-a" sp-backward-symbol)
+    ("C-a" sp-backward-sexp)
     ("C-s" end-of-buffer)
-    ("C-d" sp-forward-symbol)
+    ("C-d" sp-forward-sexp)
     ("C-q" cua-scroll-down)
     ("C-e" cua-scroll-up)
     ("p" (lambda() (interactive) (deactivate-mark) (cua-set-mark)))
@@ -282,6 +282,8 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("c" er/mark-comment)
     ("t" er/mark-inner-tag)
     ("T" er/mark-outer-tag)
+    ("k" avy-goto-char-timer)
+    ("e" exchange-point-and-mark)
     ("C-SPC" (er/expand-region 1))
     ("C-M-SPC" (er/contract-region 1))
     ("C-z" undo)
@@ -479,10 +481,10 @@ _M-f_ Find     _d_   Del
     "
 ^Buffer-Change^ ^Buffer-Modify^ ^Buffers^    ^Files^
 ^^^^^^^^-------------------------------------------------
-_s_   Save      _r_   Ren Buf   _b_   List   _C-f_ Find
-_M-f_ Search    _d_   Del Buf   _f_   Search _w_   Write
-_C-=_ Zoom In   _C-r_ Ren F+B   _RET_ Select _i_   Insert
-_C--_ Zoom Out  _C-d_ Del F+B   _h_   Helm
+_s_   Save      _r_     Ren Buf _b_   List   _C-f_ Find
+_M-f_ Search    _d_     Del Buf _f_   Search _w_   Write
+_C-=_ Zoom In   _C-r_   Ren F+B _RET_ Select _i_   Insert
+_C--_ Zoom Out  _C-S-d_ Del F+B _h_   Helm
 _C-a_ Mark All
     "
     ("C-s" save-buffer :exit t)
@@ -495,7 +497,7 @@ _C-a_ Mark All
     ("r" rename-buffer)
     ("d" kill-this-buffer)
     ("C-r" rename-file-and-buffer)
-    ("C-d" delete-file-and-buffer)
+    ("C-S-d" delete-file-and-buffer)
     ("b" helm-mini)
     ("f" helm-multi-swoop-all)
     ("RET" helm-maybe-exit-minibuffer)
@@ -526,12 +528,12 @@ _C-r_ Ring
     ("<left>" left-char) ;; May use left-char-message in future
     ("<down>" next-line) ;; May use next-line-message in future
     ("<right>" right-char) ;; May use right-char-message in future
-    ("M-q" sp-beginning-of-sexp)
-    ("M-e" sp-end-of-sexp)
+    ("M-q" sp-next-sexp)
+    ("M-e" sp-previous-sexp)
     ("C-w" beginning-of-buffer)
-    ("C-a" sp-backward-symbol)
+    ("C-a" sp-backward-sexp)
     ("C-s" end-of-buffer)
-    ("C-d" sp-forward-symbol)
+    ("C-d" sp-forward-sexp)
     ("C-q" cua-scroll-down)
     ("C-e" cua-scroll-up)
     ("C-z" undo)
@@ -628,12 +630,12 @@ _C-r_ Ring  _w_ Widen   _r_ Rem
     ("<left>" left-char) ;; May use left-char-message in future
     ("<down>" next-line) ;; May use next-line-message in future
     ("<right>" right-char) ;; May use right-char-message in future
-    ("M-q" sp-beginning-of-sexp)
-    ("M-e" sp-end-of-sexp)
+    ("M-q" sp-next-sexp)
+    ("M-e" sp-previous-sexp)
     ("C-w" beginning-of-buffer)
-    ("C-a" sp-backward-symbol)
+    ("C-a" sp-backward-sexp)
     ("C-s" end-of-buffer)
-    ("C-d" sp-forward-symbol)
+    ("C-d" sp-forward-sexp)
     ("C-q" cua-scroll-down)
     ("C-e" cua-scroll-up)
     ("<M-return>" org-insert-heading)
@@ -760,10 +762,10 @@ _s_ Search
   (sp-pair "{" nil :unless '(sp-point-before-word-p))
 
   :bind
-  (("C-a" . sp-backward-symbol)
-   ("C-d" . sp-forward-symbol)
-   ("M-q" . sp-beginning-of-sexp)
-   ("M-e" . sp-end-of-sexp)))
+  (("C-a" . sp-backward-sexp)
+   ("C-d" . sp-forward-sexp)
+   ("M-q" . sp-next-sexp)
+   ("M-e" . sp-previous-sexp)))
 
 (use-package spacemacs-theme
   :ensure t
@@ -940,42 +942,46 @@ _s_ Search
       ;; If region is active,
       ;; then delete region
       (delete-region (region-beginning) (region-end))
-    (if (string-match-p "^[[:space:]]*$" (buffer-substring (line-beginning-position) (line-end-position)))
-	;; If current line is empty or only whitespace characters,
-	;; then delete consecutive empty surrounding lines if they exist,
-	;; otherwise delete current line.
-	(delete-blank-lines)
-      (if (string-match-p "[^[:space:]]+" (buffer-substring (line-beginning-position) (point)))
-	  ;; If line up to point contains at least one non-whitespace character,
-	  ;; then delete non-whitespace character previous to point if it exists,
-	  ;; otherwise hungrily delete whitespace characters backward
-	  (hungry-delete-backward 1)
-	(let ((original-line (string-to-number (format-mode-line "%l")))
-	      (original-column (string-to-number (format-mode-line "%c"))))
-	  (forward-line -1)
-	  (if (string-match-p "^[[:space:]]*$" (buffer-substring (line-beginning-position) (line-end-position)))
-	      ;; If line up to point is empty or only whitespace characters and previous line, Line P, is empty,
-	      ;; then delete consecutive empty lines previous to Line P if they exist,
-	      ;; otherwise delete Line P
-	      (progn
-		(goto-char (point-max))
-		(let ((original-number-of-lines (string-to-number (format-mode-line "%l"))))
-		  (goto-char (point-min))
-		  (forward-line (- original-line 2))
-		  (delete-blank-lines)
+    (if (or
+	 (sp--looking-back (sp--get-opening-regexp (sp--get-pair-list-context 'navigate)))
+	 (sp--looking-back (sp--get-closing-regexp (sp--get-pair-list-context 'navigate))))
+	;; If point is after opening or closing pair,
+	;; then delete opening and closing pair.
+	(sp-backward-unwrap-sexp)
+      (if (sp-point-in-blank-line)
+	  ;; If current line is empty or only whitespace characters,
+	  ;; then delete consecutive empty surrounding lines if they exist,
+	  ;; otherwise delete current line.
+	  (delete-blank-lines)
+	(if (string-match-p "[^[:space:]]+" (buffer-substring (line-beginning-position) (point)))
+	    ;; If line up to point contains at least one non-whitespace character,
+	    ;; then delete non-whitespace character previous to point if it exists,
+	    ;; otherwise hungrily delete whitespace characters backward
+	    (hungry-delete-backward 1)
+	  (let ((original-line (string-to-number (format-mode-line "%l")))
+		(original-column (string-to-number (format-mode-line "%c"))))
+	    (forward-line -1)
+	    (if (string-match-p "^[[:space:]]*$" (buffer-substring (line-beginning-position) (line-end-position)))
+		;; If line up to point is empty or only whitespace characters and previous line, Line P, is empty,
+		;; then delete consecutive empty lines previous to Line P if they exist,
+		;; otherwise delete Line P
+		(progn
 		  (goto-char (point-max))
-		  (let ((new-number-of-lines (string-to-number (format-mode-line "%l"))))
+		  (let ((original-number-of-lines (string-to-number (format-mode-line "%l"))))
 		    (goto-char (point-min))
-		    (forward-line (- original-line (- original-number-of-lines new-number-of-lines) 1))
-		    (right-char original-column))))
-	            ;; (goto-char original-point-position))
-	    ;; If line up to point is empty or only whitespace characters and previous line is non-empty,
-	    ;; then hungrily delete whitespace characters backward
-	    (goto-char (point-min))
-	    (forward-line (- original-line 1))
-	    (right-char original-column)
-	    ;; (goto-char original-point-position)
-	    (hungry-delete-backward 1)))))))
+		    (forward-line (- original-line 2))
+		    (delete-blank-lines)
+		    (goto-char (point-max))
+		    (let ((new-number-of-lines (string-to-number (format-mode-line "%l"))))
+		      (goto-char (point-min))
+		      (forward-line (- original-line (- original-number-of-lines new-number-of-lines) 1))
+		      (right-char original-column))))
+	      ;; If line up to point is empty or only whitespace characters and previous line is non-empty,
+	      ;; then hungrily delete whitespace characters backward
+	      (goto-char (point-min))
+	      (forward-line (- original-line 1))
+	      (right-char original-column)
+	      (hungry-delete-backward 1))))))))
 
 (defun call-hydra-mark ()
   "Call 'cua-set-mark' then 'hydra-mark/body'."
