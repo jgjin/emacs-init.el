@@ -249,9 +249,9 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
                    _r_ Rectangle
     "
     ("M-w" previous-line)
-    ("M-a" left-char)
+    ("M-a" sp-backward-symbol)
     ("M-s" next-line)
-    ("M-d" right-char)
+    ("M-d" sp-forward-symbol)
     ("<up>" previous-line) ;; May use previous-line-message in future
     ("<left>" left-char) ;; May use left-char-message in future
     ("<down>" next-line) ;; May use next-line-message in future
@@ -521,9 +521,9 @@ _C-d_ Duplicate
 _C-r_ Ring
     "
     ("M-w" previous-line)
-    ("M-a" left-char)
+    ("M-a" sp-backward-symbol)
     ("M-s" next-line)
-    ("M-d" right-char)
+    ("M-d" sp-forward-symbol)
     ("<up>" previous-line) ;; May use previous-line-message in future
     ("<left>" left-char) ;; May use left-char-message in future
     ("<down>" next-line) ;; May use next-line-message in future
@@ -623,9 +623,9 @@ _C-v_ Paste _s_ Subtree _a_ Add
 _C-r_ Ring  _w_ Widen   _r_ Rem
     "
     ("M-w" previous-line)
-    ("M-a" left-char)
+    ("M-a" sp-backward-symbol)
     ("M-s" next-line)
-    ("M-d" right-char)
+    ("M-d" sp-forward-symbol)
     ("<up>" previous-line) ;; May use previous-line-message in future
     ("<left>" left-char) ;; May use left-char-message in future
     ("<down>" next-line) ;; May use next-line-message in future
@@ -1002,6 +1002,18 @@ _s_ Search
                (file-writable-p buffer-file-name))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
+;; https://unix.stackexchange.com/questions/48289/emacs-m-x-query-replace-wrap-around-the-document
+(defadvice query-replace
+    (around replace-wrap
+	    (FROM-STRING TO-STRING &optional DELIMITED START END))
+  "Execute 'query-replace', wrapping to the top of the buffer after you reach the bottom."
+  (save-excursion
+    (let ((start (point)))
+      ad-do-it
+      (beginning-of-buffer)
+      (ad-set-args 4 (list (point-min) start))
+      ad-do-it)))
+
 ;; Set overriding non-package personal keybindings
 (bind-keys*
  ((kbd "C-M-a") . beginning-of-line)
@@ -1030,8 +1042,8 @@ _s_ Search
 ;; Set non-overriding personal keybindings
 (global-set-key (kbd "M-s") 'next-line)
 (global-set-key (kbd "M-w") 'previous-line)
-(global-set-key (kbd "M-d") 'right-char)
-(global-set-key (kbd "M-a") 'left-char)
+(global-set-key (kbd "M-d") 'sp-forward-symbol)
+(global-set-key (kbd "M-a") 'sp-backward-symbol)
 (global-set-key (kbd "<left>") 'left-char) ;; May use left-char-message in future
 (global-set-key (kbd "<right>") 'right-char) ;; May use right-char-message in future
 (global-set-key (kbd "<up>") 'previous-line) ;; May use previous-line-message in future
