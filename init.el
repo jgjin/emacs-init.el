@@ -78,6 +78,7 @@
 (require 'diminish)
 (require 'bind-key)
 
+;; Set package configurations
 (use-package avy
   :ensure t
   :config
@@ -134,6 +135,7 @@
    ("C-M-b" . bm-next)
    ("M-b" . bm-previous)))
 
+;; Needed for installing pdf-tools initially
 ;; (use-package cask
 ;;   :ensure t)
 
@@ -779,6 +781,7 @@ _s_ Search
   :bind
   (("M-z" . zzz-to-char)))
 
+;; Set custom functions
 (defun yank-pop-reverse ()
   "Invoke 'yank-pop' with -1 argument."
   (interactive)
@@ -935,6 +938,24 @@ _s_ Search
   (insert ")")
   (exchange-point-and-mark))
 
+(defun double-quotes-to-end-of-line ()
+  "Select current position to end of line as region and insert double quotes."
+  (interactive)
+  (insert "\"")
+  (set-mark (point))
+  (end-of-line)
+  (insert "\"")
+  (exchange-point-and-mark))
+
+(defun single-quotes-to-end-of-line ()
+  "Select current position to end of line as region and insert single quotes."
+  (interactive)
+  (insert "'")
+  (set-mark (point))
+  (end-of-line)
+  (insert "'")
+  (exchange-point-and-mark))
+
 (defun custom-delete ()
   "Delete with custom (more complex) behavior.  See function body for more information."
   (interactive)
@@ -995,6 +1016,7 @@ _s_ Search
 ;;   (kill-line)
 ;;   (hydra-kill-ring/body))
 
+;; Set advice
 ;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
 (defadvice find-file (after find-file-sudo activate)
   "Find file as root if necessary."
@@ -1014,7 +1036,8 @@ _s_ Search
       (ad-set-args 4 (list (point-min) start))
       ad-do-it)))
 
-;; Set overriding non-package personal keybindings
+;; Set non-package keybindings
+;; Set overriding non-package keybindings
 (bind-keys*
  ((kbd "C-M-a") . beginning-of-line)
  ((kbd "C-M-d") . end-of-line)
@@ -1035,11 +1058,13 @@ _s_ Search
  ((kbd "C-;") . iedit-mode)
  ((kbd "C-(") . parenthesize-to-beginning-of-line)
  ((kbd "C-)") . parenthesize-to-end-of-line)
+ ((kbd "C-\"") . double-quotes-to-end-of-line)
+ ((kbd "C-'") . single-quotes-to-end-of-line)
  ((kbd "C-x") . hydra-control-x-prefix/body)
  ((kbd "C-c") . hydra-kill-ring/body)
  ((kbd "C-k") . kill-line))
 
-;; Set non-overriding personal keybindings
+;; Set non-overriding non-package keybindings
 (global-set-key (kbd "M-s") 'next-line)
 (global-set-key (kbd "M-w") 'previous-line)
 (global-set-key (kbd "M-d") 'sp-forward-symbol)
@@ -1055,6 +1080,16 @@ _s_ Search
 (global-set-key (kbd "C-SPC") 'call-hydra-mark)
 (global-set-key (kbd "<C-backspace>") 'delete-backward-char)
 (global-set-key (kbd "<backspace>") 'custom-delete)
+
+;; Set non-package major modes
+;; e.g. (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
+
+;; Set non-package hooks
+(defun pdf-view-hook ()
+  "Execute 'pdf-tools-install' when opening pdf files."
+  (when (string= (file-name-extension buffer-file-name) "pdf")
+    (pdf-tools-install)))
+(add-hook 'find-file-hook 'pdf-view-hook)
 
 ;; Enable emacsclient
 (server-start)
