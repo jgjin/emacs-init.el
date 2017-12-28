@@ -49,6 +49,7 @@
    (quote
     ("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default)))
  '(delete-old-versions t)
+ '(fci-rule-column 120)
  '(inhibit-startup-screen t)
  '(kept-new-versions 6)
  '(kept-old-versions 2)
@@ -248,7 +249,6 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
         _S_ Pre+sym  _o_ Out Pair  _T_       Out Tag
         _c_ Call     _b_ Block     _C-SPC_   Expand
         _a_ Accessor _f_ Function  _C-M-SPC_ Contract
-                   _r_ Rectangle
     "
     ("M-w" previous-line)
     ("M-a" sp-backward-symbol)
@@ -279,7 +279,6 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("b" mark-sexp)
     ("d" er/mark-defun)
     ("f" er/mark-defun)
-    ("r" (lambda() (interactive) (deactivate-mark) (rectangle-mark-mode)))
     ("u" er/mark-url)
     ("c" er/mark-comment)
     ("t" er/mark-inner-tag)
@@ -289,10 +288,46 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("C-SPC" (er/expand-region 1))
     ("C-M-SPC" (er/contract-region 1))
     ("C-z" undo)
+    ("r" (lambda() (interactive) (deactivate-mark) (rectangle-mark-mode) (hydra-rectangle-mark/body)) :exit t)
     ("C-c" (lambda() (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark) (hydra-kill-ring/body)) :exit t)
     ("C-x" (lambda() (interactive) (kill-region (region-beginning) (region-end)) (hydra-kill-ring/body)) :exit t)
     ("C-M-d" duplicate-line-or-region :exit t)
-    ("O" hydra-org/body :exit t)))
+    ("O" hydra-org/body :exit t))
+
+  (defhydra hydra-rectangle-mark
+    (:foreign-keys nil
+     :hint nil)
+    "
+^Move^    ^Commands^
+^^^^^^----------------
+Normal  _s_ String
+        _d_ Delete
+    "
+    ("M-w" previous-line)
+    ("M-a" sp-backward-symbol)
+    ("M-s" next-line)
+    ("M-d" sp-forward-symbol)
+    ("<up>" previous-line) ;; May use previous-line-message in future
+    ("<left>" left-char) ;; May use left-char-message in future
+    ("<down>" next-line) ;; May use next-line-message in future
+    ("<right>" right-char) ;; May use right-char-message in future
+    ("M-q" sp-next-sexp)
+    ("M-e" sp-previous-sexp)
+    ("C-w" beginning-of-buffer)
+    ("C-a" sp-backward-sexp)
+    ("C-s" end-of-buffer)
+    ("C-d" sp-forward-sexp)
+    ("C-q" cua-scroll-down)
+    ("C-e" cua-scroll-up)
+    ("s" string-rectangle :exit t)
+    ("d" delete-rectangle :exit t)
+    ("k" avy-goto-char-timer)
+    ("e" exchange-point-and-mark)
+    ("C-z" undo)
+    ("r" (lambda() (interactive) (deactivate-mark) (cua-set-mark) (hydra-mark/body)) :exit t)
+    ("C-c" (lambda() (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark) (hydra-kill-ring/body)) :exit t)
+    ("C-x" (lambda() (interactive) (kill-region (region-beginning) (region-end)) (hydra-kill-ring/body)) :exit t)
+    ("C-M-d" duplicate-line-or-region :exit t)))
 
 (use-package fill-column-indicator
   :ensure t
