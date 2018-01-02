@@ -266,7 +266,7 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("C-d" sp-forward-sexp)
     ("C-q" scroll-down)
     ("C-e" scroll-up)
-    ("p" (lambda() (interactive) (deactivate-mark) (set-mark-command (point))))
+    ("p" (lambda() (interactive) (deactivate-mark) (push-mark-command (point))))
     ("w" er/mark-word)
     ("s" er/mark-symbol)
     ("S" er/mark-symbol-with-prefix)
@@ -324,7 +324,7 @@ Normal  _s_ String
     ("k" avy-goto-char-timer)
     ("e" exchange-point-and-mark)
     ("C-z" undo)
-    ("r" (lambda() (interactive) (deactivate-mark) (set-mark-command (point)) (hydra-mark/body)) :exit t)
+    ("r" (lambda() (interactive) (deactivate-mark) (push-mark-command (point)) (hydra-mark/body)) :exit t)
     ("C-c" (lambda() (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark) (hydra-kill-ring/body)) :exit t)
     ("C-x" (lambda() (interactive) (kill-region (region-beginning) (region-end)) (hydra-kill-ring/body)) :exit t)
     ("C-M-d" duplicate-line-or-region :exit t)))
@@ -1040,9 +1040,9 @@ _s_ Search
 	      (hungry-delete-backward 1))))))))
 
 (defun call-hydra-mark ()
-  "Call 'set-mark-command' then 'hydra-mark/body'."
+  "Call 'push-mark-command' then 'hydra-mark/body'."
   (interactive)
-  (set-mark-command (point))
+  (push-mark-command (point))
   (hydra-mark/body))
 
 ;; (defun call-hydra-kill-ring-with-kill-line ()
