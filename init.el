@@ -27,7 +27,7 @@
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
-(cua-selection-mode 1)
+;; (cua-selection-mode 1)
 
 ;; Set tabbing options
 (setq c-default-style "linux"
@@ -264,9 +264,9 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("C-a" sp-backward-sexp)
     ("C-s" end-of-buffer)
     ("C-d" sp-forward-sexp)
-    ("C-q" cua-scroll-down)
-    ("C-e" cua-scroll-up)
-    ("p" (lambda() (interactive) (deactivate-mark) (cua-set-mark)))
+    ("C-q" scroll-down)
+    ("C-e" scroll-up)
+    ("p" (lambda() (interactive) (deactivate-mark) (set-mark-command (point))))
     ("w" er/mark-word)
     ("s" er/mark-symbol)
     ("S" er/mark-symbol-with-prefix)
@@ -317,14 +317,14 @@ Normal  _s_ String
     ("C-a" sp-backward-sexp)
     ("C-s" end-of-buffer)
     ("C-d" sp-forward-sexp)
-    ("C-q" cua-scroll-down)
-    ("C-e" cua-scroll-up)
+    ("C-q" scroll-down)
+    ("C-e" scroll-up)
     ("s" string-rectangle :exit t)
     ("d" delete-rectangle :exit t)
     ("k" avy-goto-char-timer)
     ("e" exchange-point-and-mark)
     ("C-z" undo)
-    ("r" (lambda() (interactive) (deactivate-mark) (cua-set-mark) (hydra-mark/body)) :exit t)
+    ("r" (lambda() (interactive) (deactivate-mark) (set-mark-command (point)) (hydra-mark/body)) :exit t)
     ("C-c" (lambda() (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark) (hydra-kill-ring/body)) :exit t)
     ("C-x" (lambda() (interactive) (kill-region (region-beginning) (region-end)) (hydra-kill-ring/body)) :exit t)
     ("C-M-d" duplicate-line-or-region :exit t)))
@@ -571,8 +571,8 @@ _C-r_ Ring
     ("C-a" sp-backward-sexp)
     ("C-s" end-of-buffer)
     ("C-d" sp-forward-sexp)
-    ("C-q" cua-scroll-down)
-    ("C-e" cua-scroll-up)
+    ("C-q" scroll-down)
+    ("C-e" scroll-up)
     ("C-z" undo)
     ("<backspace>" custom-delete)
     ("RET" newline)
@@ -673,8 +673,8 @@ _C-r_ Ring  _w_ Widen   _r_ Rem
     ("C-a" sp-backward-sexp)
     ("C-s" end-of-buffer)
     ("C-d" sp-forward-sexp)
-    ("C-q" cua-scroll-down)
-    ("C-e" cua-scroll-up)
+    ("C-q" scroll-down)
+    ("C-e" scroll-up)
     ("<M-return>" org-insert-heading)
     ("<C-return>" org-insert-heading-respect-content)
     ("<M-S-return>" org-insert-todo-heading)
@@ -1040,9 +1040,9 @@ _s_ Search
 	      (hungry-delete-backward 1))))))))
 
 (defun call-hydra-mark ()
-  "Call 'cua-set-mark' then 'hydra-mark/body'."
+  "Call 'set-mark-command' then 'hydra-mark/body'."
   (interactive)
-  (cua-set-mark)
+  (set-mark-command (point))
   (hydra-mark/body))
 
 ;; (defun call-hydra-kill-ring-with-kill-line ()
@@ -1097,7 +1097,8 @@ _s_ Search
  ((kbd "C-'") . single-quotes-to-end-of-line)
  ((kbd "C-x") . hydra-control-x-prefix/body)
  ((kbd "C-c") . hydra-kill-ring/body)
- ((kbd "C-k") . kill-line))
+ ((kbd "C-k") . kill-line)
+ ((kbd "C-S-SPC") . helm-all-mark-rings))
 
 ;; Set non-overriding non-package keybindings
 (global-set-key (kbd "M-s") 'next-line)
