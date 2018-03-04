@@ -1,7 +1,7 @@
 ;;; package --- Summary
 
 ;;; Commentary:
-;;; I don't know what to put here, man.
+;;; Need to clean up hydra comments?
 
 ;;; Code:
 
@@ -56,7 +56,7 @@
  '(org-agenda-files nil)
  '(package-selected-packages
    (quote
-    (pdf-tools package-build shut-up epl git commander f dash s origami flycheck-rust rust-mode iedit zzz-to-char yasnippet use-package spacemacs-theme smartparens scala-mode rainbow-delimiters powerline magit json-mode hungry-delete helm-swoop helm-projectile helm-mt helm-descbinds flycheck fill-column-indicator expand-region dumb-jump dashboard csv-mode company-quickhelp company-jedi company-irony-c-headers company-irony company-c-headers bm benchmark-init)))
+    (counsel helm-ag magic-latex-buffer pdf-tools package-build shut-up epl git commander f dash s origami flycheck-rust rust-mode iedit zzz-to-char yasnippet use-package spacemacs-theme smartparens scala-mode rainbow-delimiters powerline magit json-mode hungry-delete helm-swoop helm-projectile helm-mt helm-descbinds flycheck fill-column-indicator expand-region dumb-jump dashboard csv-mode company-quickhelp company-jedi company-irony-c-headers company-irony company-c-headers bm benchmark-init)))
  '(version-control t))
 
 ;; Set non-package faces (colors)
@@ -132,13 +132,34 @@
   (set-face-background bm-persistent-face "RoyalBlue3")
 
   :bind
-  (("C-b" . bm-toggle)
-   ("C-M-b" . bm-next)
-   ("M-b" . bm-previous)))
+  (("C-S-SPC" . bm-toggle)
+   ("M-S-SPC" . bm-next)
+   ("C-M-SPC" . bm-previous)))
 
 ;; Needed for installing pdf-tools initially
 ;; (use-package cask
 ;;   :ensure t)
+
+(use-package cargo
+  :ensure t
+  :config
+  (defhydra hydra-cargo
+    (:hint nil
+     :idle 1.00)
+    "
+_b_ build _c_ clean  _n_ new
+_i_ init  _r_ run    _s_ search
+_t_ test  _u_ update _r_ repeat
+    "
+  ("b" cargo-process-build :exit t)
+  ("c" cargo-process-clean :exit t)
+  ("n" cargo-process-new :exit t)
+  ("i" cargo-process-init :exit t)
+  ("r" cargo-process-run :exit t)
+  ("s" cargo-process-search :exit t)
+  ("t" cargo-process-test :exit t)
+  ("u" cargo-process-update :exit t)
+  ("r" cargo-process-repeat :exit t)))
 
 (use-package company
   :ensure t
@@ -238,8 +259,8 @@
   :ensure t
   :config
   (defhydra hydra-mark
-    (:foreign-keys nil
-     :hint nil)
+    (:hint nil
+     :idle 1.00)
     "
 ^Move^    ^Small^      ^Containers^  ^Miscellaneous^
 ^^^^^^-----------------------------------------------
@@ -295,13 +316,15 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("O" hydra-org/body :exit t))
 
   (defhydra hydra-rectangle-mark
-    (:foreign-keys nil
-     :hint nil)
+    (:hint nil
+     :idle 1.00)
     "
 ^Move^    ^Commands^
-^^^^^^----------------
-Normal  _s_ String
-        _d_ Delete
+^^^^-------------------------
+Normal  _s_ String _d_ Delete
+        _c_ Copy   _x_ Cut
+        _v_ Paste  _o_ Open
+        _c_ Close
     "
     ("M-w" previous-line)
     ("M-a" sp-backward-symbol)
@@ -321,6 +344,11 @@ Normal  _s_ String
     ("C-e" scroll-up)
     ("s" string-rectangle :exit t)
     ("d" delete-rectangle :exit t)
+    ("c" copy-rectangle-as-kill :exit t)
+    ("x" kill-rectangle :exit t)
+    ("v" yank-rectangle :exit t)
+    ("o" open-rectangle)
+    ("C" close-rectangle)
     ("k" avy-goto-char-timer)
     ("e" exchange-point-and-mark)
     ("C-z" undo)
@@ -393,7 +421,7 @@ Normal  _s_ String
   
   :bind
   (("M-x" . helm-M-x)
-   ("C-p" . helm-locate)
+   ("C-p" . helm-do-ag)
    ("C-h a" . helm-apropos)
    ("C-h f" . helm-man-woman)
    ("C-h s" . helm-surfraw)
@@ -407,7 +435,7 @@ Normal  _s_ String
    ("<C-return>" . helm-select-action)
    ("C-f" . helm-ff-run-grep-ag)
    :map helm-buffer-map
-   ("C-S-d" . helm-buffer-run-kill-buffers)
+   ("C-S-k" . helm-buffer-run-kill-buffers)
    :map helm-map
    ("M-w" . helm-previous-line)
    ("M-a" . helm-find-files-up-one-level)
@@ -416,6 +444,9 @@ Normal  _s_ String
    ("M-d" . helm-execute-persistent-action)
    ("<tab>" . helm-execute-persistent-action)
    ("<C-return>" . helm-select-action)))
+
+(use-package helm-ag
+  :ensure t)
 
 (use-package helm-descbinds
   :ensure t
@@ -426,12 +457,12 @@ Normal  _s_ String
   :bind
   (("C-h b" . helm-descbinds)))
 
-(use-package helm-mt
-  :ensure t
-  :bind
-  (("C-t" . helm-mt)
-   :map term-raw-map
-   ("C-t" . helm-mt)))
+;; (use-package helm-mt
+;;   :ensure t
+;;   :bind
+;;   (("C-t" . helm-mt)
+;;    :map term-raw-map
+;;    ("C-t" . helm-mt)))
 
 (use-package helm-projectile
   :ensure t
@@ -439,33 +470,31 @@ Normal  _s_ String
   ;; Enable projectile with helm
   (helm-projectile-on))
 
-(use-package helm-swoop
-  :ensure t
-  :config
-  ;; Set first helm-swoop input as empty, subsequent searches use previous query
-  (setq helm-swoop-pre-input-function
-        (lambda nil
-          (if (boundp (quote helm-swoop-pattern))
-              helm-swoop-pattern "")))
-  ;; Set helm-swoop buffer to split window vertically
-  (setq helm-swoop-split-direction (quote split-window-vertically))
-  ;; Split current window when multiple windows are open
-  (setq helm-swoop-split-with-multiple-windows t)
+;; (use-package helm-swoop
+;;   :ensure t
+;;   :config
+;;   ;; ;; Disable pre-input
+;;   ;; (setq helm-swoop-pre-input-function
+;;   ;; 	(lambda () ""))
+;;   ;; Set helm-swoop buffer to split window vertically
+;;   (setq helm-swoop-split-direction (quote split-window-vertically))
+;;   ;; Split current window when multiple windows are open
+;;   (setq helm-swoop-split-with-multiple-windows t)
 
-  :bind
-  (("C-f" . helm-swoop)
-   ("C-S-f" . helm-multi-swoop-current-mode)
-   :map helm-swoop-map
-   ("C-f" . helm-multi-swoop-current-mode-from-helm-swoop)
-   ("C-S-f" . helm-multi-swoop-all-from-helm-swoop)
-   ("M-w" . helm-previous-line)
-   ("M-s" . helm-next-line)
-   ("C-e" . helm-swoop-edit)
-   :map helm-multi-swoop-map
-   ("C-f" . helm-multi-swoop-all)
-   ("M-w" . helm-previous-line)
-   ("M-s" . helm-next-line)
-   ("C-e" . helm-multi-swoop-edit)))
+;;   :bind
+;;   (("C-f" . helm-swoop)
+;;    ("C-S-f" . helm-multi-swoop-current-mode)
+;;    :map helm-swoop-map
+;;    ("C-f" . helm-multi-swoop-current-mode-from-helm-swoop)
+;;    ("C-S-f" . helm-multi-swoop-all-from-helm-swoop)
+;;    ("M-w" . helm-previous-line)
+;;    ("M-s" . helm-next-line)
+;;    ("C-e" . helm-swoop-edit)
+;;    :map helm-multi-swoop-map
+;;    ("C-f" . helm-multi-swoop-all)
+;;    ("M-w" . helm-previous-line)
+;;    ("M-s" . helm-next-line)
+;;    ("C-e" . helm-multi-swoop-edit)))
 
 (use-package hl-line
   :config
@@ -478,14 +507,14 @@ Normal  _s_ String
   :ensure t
   :config
   (defhydra hydra-buffer-and-window
-    (:foreign-keys nil
-     :hint nil)
-     "
-^Navigate^     ^Window^      ^Split^          ^Buffer^
+    (:hint nil
+     :idle 1.00)
+    "
+^Navigate^     ^Window^     ^Split^         ^Buffer^
 ^^^^^^^^---------------------------------------------------
-_M-w_ Scroll ↑ _C-w_ Move ↑  _C-M-w_ Split ↑  _b_   Buffers
+_M-w_ Scroll ↑ _C-w_ Move ↑ _C-M-w_ Split ↑ _b_   Buffers
 _M-a_ Prev Buf _C-a_ Move ← _C-M-a_ Split ← _t_   Terminals
-_M-s_ Scroll ↓ _C-s_ Move ↓  _C-M-s_ Split ↓  _C-f_ Files
+_M-s_ Scroll ↓ _C-s_ Move ↓ _C-M-s_ Split ↓ _C-f_ Files
 _M-d_ Next Buf _C-d_ Move → _C-M-d_ Split → _RET_ Select
 _M-f_ Find     _d_   Del
              _f_   Focus
@@ -494,7 +523,7 @@ _M-f_ Find     _d_   Del
     ("M-a" previous-buffer)
     ("M-s" scroll-up)
     ("M-d" next-buffer)
-    ("M-f" helm-swoop)
+    ("M-f" helm-occur)
     ("C-w" (other-window -1))
     ("C-a" (other-window -1))
     ("C-s" (other-window 1))
@@ -512,9 +541,8 @@ _M-f_ Find     _d_   Del
     ("C-x" hydra-control-x-prefix/body :exit t))
 
   (defhydra hydra-control-x-prefix
-    (:foreign-keys nil
-     :hint nil
-     :idle 0.25)
+    (:hint nil
+     :idle 1.00)
     "
 ^Buffer-Change^ ^Buffer-Modify^ ^Buffers^    ^Files^
 ^^^^^^^^-------------------------------------------------
@@ -527,7 +555,7 @@ _C-a_ Mark All
     ("C-s" save-buffer :exit t)
     ("C-c" save-buffers-kill-terminal :exit t)
     ("s" save-buffer)
-    ("M-f" helm-swoop)
+    ("M-f" helm-occur)
     ("C-=" text-scale-increase)
     ("C--" text-scale-decrease)
     ("C-a" mark-whole-buffer)
@@ -547,9 +575,8 @@ _C-a_ Mark All
     ("O" hydra-org/body :exit t))
   
   (defhydra hydra-kill-ring
-    (:foreign-keys nil
-     :hint nil
-     :idle 0.25)
+    (:hint nil
+     :idle 1.00)
     "
 ^Actions^
 ^^---------
@@ -576,10 +603,13 @@ _C-r_ Ring
     ("C-z" undo)
     ("<backspace>" custom-delete)
     ("RET" newline)
+    ("<tab>" indent-for-tab-command)
     ("C-v" yank-and-indent :exit t)
     ("C-d" duplicate-line-or-region :exit t)
     ("C-r" helm-show-kill-ring :exit t)
-    ("O" hydra-org/body :exit t)))
+    ("p" hydra-projectile/body :exit t)
+    ("O" hydra-org/body :exit t)
+    ("C-c" hydra-cargo/body :exit t)))
 
 (use-package iedit
   :ensure t
@@ -624,7 +654,7 @@ _C-r_ Ring
 ;; 	'(("C-M-c" . term-kill-subjob)
 ;; 	  ("M-w" . previous-line)
 ;; 	  ("M-s" . next-line)
-;; 	  ("C-f" . helm-swoop)
+;; 	  ("C-f" . helm-occur)
 ;; 	  ;; ("C-m" . term-send-raw)
 ;; 	  ;; ("M-f" . term-send-forward-word)
 ;; 	  ;; ("M-b" . term-send-backward-word)
@@ -648,9 +678,8 @@ _C-r_ Ring
   :ensure t
   :config
   (defhydra hydra-org
-    (:foreign-keys nil
-     :hint nil
-     :idle 0.25)
+    (:hint nil
+     :idle 1.00)
      "
 ^Kill^      ^Narrow^    ^Agenda^
 ^^^^^^---------------------------
@@ -702,9 +731,8 @@ _C-r_ Ring  _w_ Widen   _r_ Rem
     ("v" hydra-org-agenda/body :exit t))
 
   (defhydra hydra-org-agenda
-    (:foreign-keys nil
-     :hint nil
-     :idle 0.25)
+    (:hint nil
+     :idle 1.00)
     "
 ^Actions^
 ^^----------
@@ -754,7 +782,57 @@ _s_ Search
   ;; Enable projectile-mode
   (projectile-mode)
   ;; Set helm as projectile completion system
-  (setq projectile-completion-system 'helm))
+  (setq projectile-completion-system 'helm)
+
+  (defhydra hydra-projectile-other-window
+    (:hint nil
+     :idle 1.00)
+    "
+^Actions^
+^^---------
+_ff_ File
+_fd_ Dwim
+_d_  Dir
+_b_  Buffer
+    "
+    ("ff"  projectile-find-file-other-window)
+    ("fd"  projectile-find-file-dwim-other-window)
+    ("d"  projectile-find-dir-other-window)
+    ("b"  projectile-switch-to-buffer-other-window))
+
+  (defhydra hydra-projectile
+    (:hint nil
+     :idle 1.00)
+    "
+Project: %(projectile-project-root)
+
+^File^      ^Search^  ^Buffer^   ^Cache^     ^Project^
+^^^^^^^^^^-----------------------------------------------
+_ff_ Find   _a_ Ag    _b_ Switch _c_ Clear   _P_ Switch
+_fd_ Dwim   _g_ Gtags _k_ Kill   _x_ Remove  _C_ Compile
+_fc_ Cwd    _o_ Occur          ^^_X_ Clean   _n_ Next err
+_r_  Recent                  ^^^^_z_ Current _R_ Run
+_d_  Dir
+    "
+    ("a"   projectile-ag)
+    ("b"   projectile-switch-to-buffer)
+    ("c"   projectile-invalidate-cache)
+    ("C"   projectile-compile-project)
+    ("d"   projectile-find-dir)
+    ("ff"  projectile-find-file)
+    ("fd"  projectile-find-file-dwim)
+    ("fc"  projectile-find-file-in-directory)
+    ("g"   ggtags-update-tags)
+    ("k"   projectile-kill-buffers)
+    ("n"   next-error)
+    ("o"   projectile-multi-occur)
+    ("P"   projectile-switch-project)
+    ("r"   projectile-recentf)
+    ("R"   projectile-run-project)
+    ("x"   projectile-remove-known-project)
+    ("X"   projectile-cleanup-known-projects)
+    ("z"   projectile-cache-current-file)
+    ("O"   hydra-projectile-other-window/body :exit t)))
 
 (use-package rainbow-delimiters
   :ensure t
@@ -1078,10 +1156,10 @@ _s_ Search
  ((kbd "C-M-d") . end-of-line)
  ((kbd "C-q") . scroll-down-command)
  ((kbd "C-M-q") . beginning-of-defun)
- ((kbd "C-S-q") . (lambda() (interactive) (other-window 1)))
+ ((kbd "C-S-q") . switch-to-prev-buffer)
  ((kbd "C-e") . scroll-up-command)
  ((kbd "C-M-e") . end-of-defun)
- ((kbd "C-S-e") . (lambda() (interactive) (other-window -1)))
+ ((kbd "C-S-e") . switch-to-next-buffer)
  ((kbd "M-v") . yank-pop)
  ((kbd "C-M-v") . yank-pop-reverse)
  ((kbd "M-f") . goto-line)
@@ -1098,7 +1176,7 @@ _s_ Search
  ((kbd "C-x") . hydra-control-x-prefix/body)
  ((kbd "C-c") . hydra-kill-ring/body)
  ((kbd "C-k") . kill-line)
- ((kbd "C-S-SPC") . helm-all-mark-rings))
+ ((kbd "<C-S-escape>") . server-force-delete))
 
 ;; Set non-overriding non-package keybindings
 (global-set-key (kbd "M-s") 'next-line)
@@ -1111,11 +1189,14 @@ _s_ Search
 (global-set-key (kbd "<down>") 'next-line) ;; May use next-line-message in future
 (global-set-key (kbd "C-s") 'end-of-buffer)
 (global-set-key (kbd "C-w") 'beginning-of-buffer)
-(global-set-key (kbd "C-S-d") 'kill-whole-line)
+(global-set-key (kbd "C-S-k") 'kill-whole-line)
+(global-set-key (kbd "C-S-a") (lambda() (interactive) (other-window 1)))
+(global-set-key (kbd "C-S-d") (lambda() (interactive) (other-window -1)))
 (global-set-key (kbd "C-r") 'query-replace)
 (global-set-key (kbd "C-SPC") 'call-hydra-mark)
 (global-set-key (kbd "<C-backspace>") 'delete-backward-char)
 (global-set-key (kbd "<backspace>") 'custom-delete)
+(global-set-key (kbd "C-f") 'helm-occur)
 
 ;; Set non-package major modes
 ;; e.g. (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
