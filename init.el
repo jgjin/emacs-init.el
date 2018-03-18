@@ -1,7 +1,7 @@
 ;;; package --- Summary
 
 ;;; Commentary:
-;;; Need to clean up hydra comments?
+;;; Add C-S-c tex-compile to LaTeX
 
 ;;; Code:
 
@@ -53,10 +53,10 @@
  '(inhibit-startup-screen t)
  '(kept-new-versions 6)
  '(kept-old-versions 2)
- '(org-agenda-files nil)
- '(package-selected-packages
-   (quote
-    (counsel helm-ag magic-latex-buffer pdf-tools package-build shut-up epl git commander f dash s origami flycheck-rust rust-mode iedit zzz-to-char yasnippet use-package spacemacs-theme smartparens scala-mode rainbow-delimiters powerline magit json-mode hungry-delete helm-swoop helm-projectile helm-mt helm-descbinds flycheck fill-column-indicator expand-region dumb-jump dashboard csv-mode company-quickhelp company-jedi company-irony-c-headers company-irony company-c-headers bm benchmark-init)))
+ '(org-agenda-files (quote ("~/.emacs.d/org-agenda")))
+ ;; '(package-selected-packages
+ ;;   (quote
+ ;;    (helm-ag pdf-tools package-build shut-up epl git commander f dash s origami flycheck-rust rust-mode iedit zzz-to-char yasnippet use-package spacemacs-theme smartparens scala-mode rainbow-delimiters powerline magit json-mode hungry-delete helm-swoop helm-projectile helm-mt helm-descbinds flycheck fill-column-indicator expand-region dumb-jump dashboard csv-mode company-quickhelp company-jedi company-irony-c-headers company-irony company-c-headers bm benchmark-init)))
  '(version-control t))
 
 ;; Set non-package faces (colors)
@@ -147,19 +147,20 @@
     (:hint nil
      :idle 1.00)
     "
-_b_ build _c_ clean  _n_ new
-_i_ init  _r_ run    _s_ search
-_t_ test  _u_ update _r_ repeat
+^Commands^
+^^^^^^-------------------------
+_b_ build _n_ clean  _t_ test
+_c_ clean _r_ repeat _u_ update
+_i_ init  _s_ search
     "
   ("b" cargo-process-build :exit t)
   ("c" cargo-process-clean :exit t)
-  ("n" cargo-process-new :exit t)
   ("i" cargo-process-init :exit t)
-  ("r" cargo-process-run :exit t)
+  ("n" cargo-process-new :exit t)
+  ("r" cargo-process-repeat :exit t)
   ("s" cargo-process-search :exit t)
   ("t" cargo-process-test :exit t)
-  ("u" cargo-process-update :exit t)
-  ("r" cargo-process-repeat :exit t)))
+  ("u" cargo-process-update :exit t)))
 
 (use-package company
   :ensure t
@@ -192,9 +193,11 @@ _t_ test  _u_ update _r_ repeat
   :config
   ;; Add Python to company
   (add-hook 'python-mode-hook (lambda()
-                                (add-to-list 'company-backends 'company-jedi)))
-  (setq python-shell-interpreter "/usr/bin/python")
-  (setq python-shell-interpreter-args "-O"))
+                                (add-to-list 'company-backends 'company-jedi))))
+
+;; Verify if these work
+;; (setq python-shell-interpreter "/usr/bin/python")
+;; (setq python-shell-interpreter-args "-O"))
 
 (use-package company-quickhelp
   :ensure t
@@ -241,20 +244,6 @@ _t_ test  _u_ update _r_ repeat
   ;; Overrides M-s as a prefix key
   (("M-s" . next-line)))
 
-;; (use-package dumb-jump
-;;   :ensure t
-;;   :config
-;;   ;; Enable dumb-jump mode
-;;   (dumb-jump-mode)
-;;   ;; Enable dumb-jump with helm
-;;   (setq dumb-jump-selector 'helm)
-;;   ;; Force dumb-jump to use ag
-;;   (setq dumb-jump-force-searcher 'ag)
-
-;;   :bind
-;;   (("C-c C-r" . dumb-jump-back)
-;;    ("C-j" . dumb-jump-go-prefer-external)))
-
 (use-package expand-region
   :ensure t
   :config
@@ -262,7 +251,7 @@ _t_ test  _u_ update _r_ repeat
     (:hint nil
      :idle 1.00)
     "
-^Move^    ^Small^      ^Containers^  ^Miscellaneous^
+Move    ^Small^      ^Containers^  ^Miscellaneous^
 ^^^^^^-----------------------------------------------
 Normal  _p_ Point    _q_ In ''     _u_       Url
         _w_ Word     _Q_ Out ''    _c_       Comment
@@ -271,91 +260,87 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
         _c_ Call     _b_ Block     _C-SPC_   Expand
         _a_ Accessor _f_ Function  _C-M-SPC_ Contract
     "
-    ("M-w" previous-line)
-    ("M-a" sp-backward-symbol)
-    ("M-s" next-line)
-    ("M-d" sp-forward-symbol)
-    ("<up>" previous-line) ;; May use previous-line-message in future
-    ("<left>" left-char) ;; May use left-char-message in future
-    ("<down>" next-line) ;; May use next-line-message in future
-    ("<right>" right-char) ;; May use right-char-message in future
-    ("M-q" sp-next-sexp)
-    ("M-e" sp-previous-sexp)
-    ("C-w" beginning-of-buffer)
-    ("C-a" sp-backward-sexp)
-    ("C-s" end-of-buffer)
-    ("C-d" sp-forward-sexp)
-    ("C-q" scroll-down)
-    ("C-e" scroll-up)
-    ("p" (lambda() (interactive) (deactivate-mark) (push-mark-command (point))))
-    ("w" er/mark-word)
-    ("s" er/mark-symbol)
-    ("S" er/mark-symbol-with-prefix)
-    ("c" er/mark-method-call)
-    ("a" er/mark-next-accessor)
-    ("q" er/mark-inside-quotes)
-    ("Q" er/mark-outside-quotes)
-    ("i" er/mark-inside-pairs)
-    ("o" er/mark-inside-pairs)
-    ("b" mark-sexp)
-    ("d" er/mark-defun)
-    ("f" er/mark-defun)
-    ("u" er/mark-url)
-    ("c" er/mark-comment)
-    ("t" er/mark-inner-tag)
-    ("T" er/mark-outer-tag)
-    ("k" avy-goto-char-timer)
-    ("e" exchange-point-and-mark)
-    ("C-SPC" (er/expand-region 1))
+    ("M-w"     previous-line)
+    ("M-s"     next-line)
+    ("M-a"     sp-backward-symbol)
+    ("M-d"     sp-forward-symbol)
+    ("<up>"    previous-line)
+    ("<down>"  next-line)
+    ("<left>"  left-char)
+    ("<right>" right-char)
+    ("C-w"     beginning-of-buffer)
+    ("C-s"     end-of-buffer)
+    ("C-a"     sp-backward-sexp)
+    ("C-d"     sp-forward-sexp)
+    ("M-q"     sp-next-sexp)
+    ("C-q"     scroll-down)
+    ("M-e"     sp-previous-sexp)
+    ("C-e"     scroll-up)
+    ("p"       (lambda() (interactive) (deactivate-mark) (push-mark-command (point))))
+    ("w"       er/mark-word)
+    ("s"       er/mark-symbol)
+    ("S"       er/mark-symbol-with-prefix)
+    ("c"       er/mark-method-call)
+    ("a"       er/mark-next-accessor)
+    ("q"       er/mark-inside-quotes)
+    ("Q"       er/mark-outside-quotes)
+    ("i"       er/mark-inside-pairs)
+    ("o"       er/mark-inside-pairs)
+    ("b"       mark-sexp)
+    ("d"       er/mark-defun)
+    ("f"       er/mark-defun)
+    ("u"       er/mark-url)
+    ("c"       er/mark-comment)
+    ("t"       er/mark-inner-tag)
+    ("T"       er/mark-outer-tag)
+    ("k"       avy-goto-char-timer)
+    ("e"       exchange-point-and-mark)
+    ("C-SPC"   (er/expand-region 1))
     ("C-M-SPC" (er/contract-region 1))
-    ("C-z" undo)
-    ("r" (lambda() (interactive) (deactivate-mark) (rectangle-mark-mode) (hydra-rectangle-mark/body)) :exit t)
-    ("C-c" (lambda() (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark) (hydra-kill-ring/body)) :exit t)
-    ("C-x" (lambda() (interactive) (kill-region (region-beginning) (region-end)) (hydra-kill-ring/body)) :exit t)
-    ("C-M-d" duplicate-line-or-region :exit t)
-    ("O" hydra-org/body :exit t))
+    ("C-z"     undo)
+    ("r"       (lambda() (interactive) (deactivate-mark) (rectangle-mark-mode) (hydra-rectangle-mark/body)) :exit t)
+    ("C-c"     (lambda() (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark)) :exit t)
+    ("C-x"     (lambda() (interactive) (kill-region (region-beginning) (region-end))) :exit t)
+    ("C-M-d"   duplicate-line-or-region :exit t))
 
   (defhydra hydra-rectangle-mark
     (:hint nil
      :idle 1.00)
     "
-^Move^    ^Commands^
+Move    ^Commands^
 ^^^^-------------------------
 Normal  _s_ String _d_ Delete
         _c_ Copy   _x_ Cut
         _v_ Paste  _o_ Open
-        _c_ Close
+        _C_ Close
     "
-    ("M-w" previous-line)
-    ("M-a" sp-backward-symbol)
-    ("M-s" next-line)
-    ("M-d" sp-forward-symbol)
-    ("<up>" previous-line) ;; May use previous-line-message in future
-    ("<left>" left-char) ;; May use left-char-message in future
-    ("<down>" next-line) ;; May use next-line-message in future
-    ("<right>" right-char) ;; May use right-char-message in future
-    ("M-q" sp-next-sexp)
-    ("M-e" sp-previous-sexp)
-    ("C-w" beginning-of-buffer)
-    ("C-a" sp-backward-sexp)
-    ("C-s" end-of-buffer)
-    ("C-d" sp-forward-sexp)
-    ("C-q" scroll-down)
-    ("C-e" scroll-up)
-    ("s" string-rectangle :exit t)
-    ("d" delete-rectangle :exit t)
-    ("c" copy-rectangle-as-kill :exit t)
-    ("x" kill-rectangle :exit t)
-    ("v" yank-rectangle :exit t)
-    ("o" open-rectangle)
-    ("C" close-rectangle)
-    ("k" avy-goto-char-timer)
-    ("e" exchange-point-and-mark)
-    ("C-z" undo)
-    ("r" (lambda() (interactive) (deactivate-mark) (push-mark-command (point)) (hydra-mark/body)) :exit t)
-    ("C-c" (lambda() (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark) (hydra-kill-ring/body)) :exit t)
-    ("C-x" (lambda() (interactive) (kill-region (region-beginning) (region-end)) (hydra-kill-ring/body)) :exit t)
-    ("C-M-d" duplicate-line-or-region :exit t)))
+    ("M-w"     previous-line)
+    ("M-s"     next-line)
+    ("M-a"     sp-backward-symbol)
+    ("M-d"     sp-forward-symbol)
+    ("<up>"    previous-line)
+    ("<down>"  next-line)
+    ("<left>"  left-char)
+    ("<right>" right-char)
+    ("C-w"     beginning-of-buffer)
+    ("C-s"     end-of-buffer)
+    ("C-a"     sp-backward-sexp)
+    ("C-d"     sp-forward-sexp)
+    ("M-q"     sp-next-sexp)
+    ("C-q"     scroll-down)
+    ("M-e"     sp-previous-sexp)
+    ("C-e"     scroll-up)
+    ("s"       string-rectangle :exit t)
+    ("c"       copy-rectangle-as-kill :exit t)
+    ("v"       yank-rectangle :exit t)
+    ("C"       close-rectangle)
+    ("d"       delete-rectangle :exit t)
+    ("x"       kill-rectangle :exit t)
+    ("o"       open-rectangle)
+    ("k"       avy-goto-char-timer)
+    ("e"       exchange-point-and-mark)
+    ("C-z"     undo)
+    ("r"       (lambda() (interactive) (deactivate-mark) (push-mark-command (point)) (hydra-mark/body)) :exit t)))
 
 (use-package fill-column-indicator
   :ensure t
@@ -433,7 +418,6 @@ Normal  _s_ String _d_ Delete
    ("M-d" . helm-execute-persistent-action)
    ("<tab>" . helm-execute-persistent-action)
    ("<C-return>" . helm-select-action)
-   ("C-f" . helm-ff-run-grep-ag)
    :map helm-buffer-map
    ("C-S-k" . helm-buffer-run-kill-buffers)
    :map helm-map
@@ -470,6 +454,7 @@ Normal  _s_ String _d_ Delete
   ;; Enable projectile with helm
   (helm-projectile-on))
 
+;; Check if works again
 ;; (use-package helm-swoop
 ;;   :ensure t
 ;;   :config
@@ -504,112 +489,7 @@ Normal  _s_ String _d_ Delete
   :ensure t)
 
 (use-package hydra
-  :ensure t
-  :config
-  (defhydra hydra-buffer-and-window
-    (:hint nil
-     :idle 1.00)
-    "
-^Navigate^     ^Window^     ^Split^         ^Buffer^
-^^^^^^^^---------------------------------------------------
-_M-w_ Scroll ↑ _C-w_ Move ↑ _C-M-w_ Split ↑ _b_   Buffers
-_M-a_ Prev Buf _C-a_ Move ← _C-M-a_ Split ← _t_   Terminals
-_M-s_ Scroll ↓ _C-s_ Move ↓ _C-M-s_ Split ↓ _C-f_ Files
-_M-d_ Next Buf _C-d_ Move → _C-M-d_ Split → _RET_ Select
-_M-f_ Find     _d_   Del
-             _f_   Focus
-    "
-    ("M-w" scroll-down)
-    ("M-a" previous-buffer)
-    ("M-s" scroll-up)
-    ("M-d" next-buffer)
-    ("M-f" helm-occur)
-    ("C-w" (other-window -1))
-    ("C-a" (other-window -1))
-    ("C-s" (other-window 1))
-    ("C-d" (other-window 1))
-    ("d" delete-window)
-    ("f" delete-other-windows)
-    ("C-M-w" (lambda() (interactive) (split-window-below) (other-window -1)))
-    ("C-M-a" (lambda() (interactive) (split-window-right) (other-window 1)))
-    ("C-M-s" split-window-below)
-    ("C-M-d" split-window-right)
-    ("b" helm-mini)
-    ("t" helm-mt)
-    ("C-f" helm-find-files)
-    ("RET" helm-maybe-exit-minibuffer)
-    ("C-x" hydra-control-x-prefix/body :exit t))
-
-  (defhydra hydra-control-x-prefix
-    (:hint nil
-     :idle 1.00)
-    "
-^Buffer-Change^ ^Buffer-Modify^ ^Buffers^    ^Files^
-^^^^^^^^-------------------------------------------------
-_s_   Save      _r_     Ren Buf _b_   List   _C-f_ Find
-_M-f_ Search    _d_     Del Buf _f_   Search _w_   Write
-_C-=_ Zoom In   _C-r_   Ren F+B _RET_ Select _i_   Insert
-_C--_ Zoom Out  _C-S-d_ Del F+B _h_   Helm
-_C-a_ Mark All
-    "
-    ("C-s" save-buffer :exit t)
-    ("C-c" save-buffers-kill-terminal :exit t)
-    ("s" save-buffer)
-    ("M-f" helm-occur)
-    ("C-=" text-scale-increase)
-    ("C--" text-scale-decrease)
-    ("C-a" mark-whole-buffer)
-    ("r" rename-buffer)
-    ("d" kill-this-buffer)
-    ("C-r" rename-file-and-buffer)
-    ("C-S-d" delete-file-and-buffer)
-    ("b" helm-mini)
-    ("f" helm-multi-swoop-all)
-    ("RET" helm-maybe-exit-minibuffer)
-    ("h" helm-resume)
-    ("C-f" helm-find-files)
-    ("w" write-file)
-    ("i" insert-file)
-    ("C-v" yank-and-indent :exit t)
-    ("C-w" hydra-buffer-and-window/body :exit t)
-    ("O" hydra-org/body :exit t))
-  
-  (defhydra hydra-kill-ring
-    (:hint nil
-     :idle 1.00)
-    "
-^Actions^
-^^---------
-_C-v_ Paste
-_C-d_ Duplicate
-_C-r_ Ring
-    "
-    ("M-w" previous-line)
-    ("M-a" sp-backward-symbol)
-    ("M-s" next-line)
-    ("M-d" sp-forward-symbol)
-    ("<up>" previous-line) ;; May use previous-line-message in future
-    ("<left>" left-char) ;; May use left-char-message in future
-    ("<down>" next-line) ;; May use next-line-message in future
-    ("<right>" right-char) ;; May use right-char-message in future
-    ("M-q" sp-next-sexp)
-    ("M-e" sp-previous-sexp)
-    ("C-w" beginning-of-buffer)
-    ("C-a" sp-backward-sexp)
-    ("C-s" end-of-buffer)
-    ("C-d" sp-forward-sexp)
-    ("C-q" scroll-down)
-    ("C-e" scroll-up)
-    ("C-z" undo)
-    ("<backspace>" custom-delete)
-    ("RET" newline)
-    ("<tab>" indent-for-tab-command)
-    ("C-v" yank-and-indent :exit t)
-    ("C-d" duplicate-line-or-region :exit t)
-    ("C-r" helm-show-kill-ring :exit t)
-    ("p" hydra-projectile/body :exit t)
-    ("O" hydra-org/body :exit t)
-    ("C-c" hydra-cargo/body :exit t)))
+  :ensure t)
 
 (use-package iedit
   :ensure t
@@ -681,70 +561,74 @@ _C-r_ Ring
     (:hint nil
      :idle 1.00)
      "
-^Kill^      ^Narrow^    ^Agenda^
-^^^^^^---------------------------
-_C-x_ Cut   _b_ Block   _v_ Views
-_C-c_ Copy  _e_ Element _l_ List
-_C-v_ Paste _s_ Subtree _a_ Add
-_C-r_ Ring  _w_ Widen   _r_ Rem
+^Kill^      ^Narrow^
+^^^^-------------------
+_C-x_ Cut   _b_ Block
+_C-c_ Copy  _e_ Element
+_C-v_ Paste _s_ Subtree
+_C-r_ Ring  _w_ Widen
     "
-    ("M-w" previous-line)
-    ("M-a" sp-backward-symbol)
-    ("M-s" next-line)
-    ("M-d" sp-forward-symbol)
-    ("<up>" previous-line) ;; May use previous-line-message in future
-    ("<left>" left-char) ;; May use left-char-message in future
-    ("<down>" next-line) ;; May use next-line-message in future
-    ("<right>" right-char) ;; May use right-char-message in future
-    ("M-q" sp-next-sexp)
-    ("M-e" sp-previous-sexp)
-    ("C-w" beginning-of-buffer)
-    ("C-a" sp-backward-sexp)
-    ("C-s" end-of-buffer)
-    ("C-d" sp-forward-sexp)
-    ("C-q" scroll-down)
-    ("C-e" scroll-up)
-    ("<M-return>" org-insert-heading)
-    ("<C-return>" org-insert-heading-respect-content)
+    ("M-w"          previous-line)
+    ("M-s"          next-line)
+    ("M-a"          sp-backward-symbol)
+    ("M-d"          sp-forward-symbol)
+    ("<up>"         previous-line)
+    ("<down>"       next-line)
+    ("<left>"       left-char)
+    ("<right>"      right-char)
+    ("C-w"          beginning-of-buffer)
+    ("C-s"          end-of-buffer)
+    ("C-a"          sp-backward-sexp)
+    ("C-d"          sp-forward-sexp)
+    ("M-q"          sp-next-sexp)
+    ("C-q"          scroll-down)
+    ("M-e"          sp-previous-sexp)
+    ("C-e"          scroll-up)
+    ("<M-return>"   org-insert-heading)
+    ("<C-return>"   org-insert-heading-respect-content)
     ("<M-S-return>" org-insert-todo-heading)
     ("<C-S-return>" org-insert-todo-heading-respect-content)
-    ("<tab>" org-cycle)
-    ("<M-left>" org-do-promote)
-    ("<M-right>" org-do-demote)
-    ("<C-left>" org-promote-subtree)
-    ("<C-right>" org-demote-subtree)
-    ("<C-up>" org-move-subtree-up)
-    ("<C-down>" org-move-subtree-down)
-    ("C-z" undo)
-    ("C-x" org-cut-subtree)
-    ("C-c" org-copy-subtree)
-    ("C-v" org-yank)
-    ("b" org-narrow-block)
-    ("e" org-narrow-element)
-    ("s" org-narrow-subtree)
-    ("w" widen)
-    ("l" org-agenda-list)
-    ("a" org-agenda-file-to-front)
-    ("r" org-remove-file)
-    ("C-r" helm-show-kill-ring :exit t)
-    ("C-x" hydra-control-x-prefix/body :exit t)
-    ("v" hydra-org-agenda/body :exit t))
+    ("<tab>"        org-cycle)
+    ("<M-left>"     org-do-promote)
+    ("<M-right>"    org-do-demote)
+    ("<C-left>"     org-promote-subtree)
+    ("<C-right>"    org-demote-subtree)
+    ("<C-up>"       org-move-subtree-up)
+    ("<C-down>"     org-move-subtree-down)
+    ("C-z"          undo)
+    ("C-x"          org-cut-subtree)
+    ("C-c"          org-copy-subtree)
+    ("C-v"          org-yank)
+    ("b"            org-narrow-block)
+    ("e"            org-narrow-element)
+    ("s"            org-narrow-subtree)
+    ("w"            widen)
+    ;; ("l" org-agenda-list)
+    ;; ("a" org-agenda-file-to-front)
+    ;; ("r" org-remove-file)
+    ;; ("v" hydra-org-agenda/body :exit t)
+    ("C-r"          helm-show-kill-ring :exit t))
 
-  (defhydra hydra-org-agenda
-    (:hint nil
-     :idle 1.00)
-    "
-^Actions^
-^^----------
-_T_ Todo
-_t_ Tags
-_l_ Timeline
-_s_ Search
-    "
-    ("T" (lambda() (interactive) (org-todo-list) (hydra-org/body)) :exit t)
-    ("t" (lambda() (interactive) (org-tags-view) (hydra-org/body)) :exit t)
-    ("l" (lambda() (interactive) (org-timeline) (hydra-org/body)) :exit t)
-    ("s" (lambda() (interactive) (org-search-view) (hydra-org/body)) :exit t))
+;;   (defhydra hydra-org-agenda
+;;     (:hint nil
+;;      :idle 1.00)
+;;     "
+;; ^Actions^    ^Period^
+;; ^^^^------------------
+;; _T_ Todo     _d_ Day
+;; _t_ Tags     _w_ Week
+;; _l_ Timeline _m_ Month
+;; _s_ Search   _y_ Year
+;;     "
+;;     ("T" (lambda() (interactive) (org-todo-list) (hydra-org/body)) :exit t)
+;;     ("t" (lambda() (interactive) (org-tags-view) (hydra-org/body)) :exit t)
+;;     ("l" (lambda() (interactive) (org-timeline) (hydra-org/body)) :exit t)
+;;     ("s" (lambda() (interactive) (org-search-view) (hydra-org/body)) :exit t)
+;;     ;; ("d" org-ag :exit t)
+;;     ;; ("w"  :exit t)
+;;     ;; ("m"  :exit t)
+;;     ;; ("y"  :exit t)
+;;     )
     
   :bind
   (:map org-mode-map
@@ -788,7 +672,7 @@ _s_ Search
     (:hint nil
      :idle 1.00)
     "
-^Actions^
+^Commands^
 ^^---------
 _ff_ File
 _fd_ Dwim
@@ -797,8 +681,8 @@ _b_  Buffer
     "
     ("ff"  projectile-find-file-other-window)
     ("fd"  projectile-find-file-dwim-other-window)
-    ("d"  projectile-find-dir-other-window)
-    ("b"  projectile-switch-to-buffer-other-window))
+    ("d"   projectile-find-dir-other-window)
+    ("b"   projectile-switch-to-buffer-other-window))
 
   (defhydra hydra-projectile
     (:hint nil
@@ -806,33 +690,34 @@ _b_  Buffer
     "
 Project: %(projectile-project-root)
 
-^File^      ^Search^  ^Buffer^   ^Cache^     ^Project^
-^^^^^^^^^^-----------------------------------------------
-_ff_ Find   _a_ Ag    _b_ Switch _c_ Clear   _P_ Switch
-_fd_ Dwim   _g_ Gtags _k_ Kill   _x_ Remove  _C_ Compile
-_fc_ Cwd    _o_ Occur          ^^_X_ Clean   _n_ Next err
-_r_  Recent                  ^^^^_z_ Current _R_ Run
-_d_  Dir
+^File^      ^Search^  ^Buffer^   ^Cache^    ^Project^
+^^^^^^^^^^------------------------------------------------
+_ff_ Find   _a_ Ag    _b_ Switch _c_ Clear  _C-p_ Switch
+_fd_ Dwim   _g_ Gtags _k_ Kill   _A_ Add    _C-c_ Compile
+_fc_ Cwd    _o_ Occur          ^^_R_ Remove _C-r_ Run
+_r_  Recent                  ^^^^_X_ Clean  _p_   Prev err
+_d_  Dir                              ^^^^^^_n    Next err
     "
-    ("a"   projectile-ag)
-    ("b"   projectile-switch-to-buffer)
-    ("c"   projectile-invalidate-cache)
-    ("C"   projectile-compile-project)
-    ("d"   projectile-find-dir)
     ("ff"  projectile-find-file)
     ("fd"  projectile-find-file-dwim)
     ("fc"  projectile-find-file-in-directory)
-    ("g"   ggtags-update-tags)
-    ("k"   projectile-kill-buffers)
-    ("n"   next-error)
-    ("o"   projectile-multi-occur)
-    ("P"   projectile-switch-project)
     ("r"   projectile-recentf)
-    ("R"   projectile-run-project)
-    ("x"   projectile-remove-known-project)
+    ("d"   projectile-find-dir)
+    ("a"   projectile-ag)
+    ("g"   ggtags-update-tags)
+    ("o"   projectile-multi-occur)
+    ("b"   projectile-switch-to-buffer)
+    ("k"   projectile-kill-buffers)
+    ("c"   projectile-invalidate-cache)
+    ("A"   projectile-add-known-project)
+    ("R"   projectile-remove-known-project)
     ("X"   projectile-cleanup-known-projects)
-    ("z"   projectile-cache-current-file)
-    ("O"   hydra-projectile-other-window/body :exit t)))
+    ("C-p" projectile-switch-project :exit t)
+    ("C-c" projectile-compile-project)
+    ("C-r" projectile-run-project)
+    ("p"   previous-error)
+    ("n"   next-error)
+    ("C-o" hydra-projectile-other-window/body :exit t)))
 
 (use-package rainbow-delimiters
   :ensure t
@@ -931,7 +816,7 @@ _d_  Dir
 ;; https://www.emacswiki.org/emacs/AutoInsertHeaderGuards
 ;; Create header guards with f12
 (global-set-key
- [f12]
+ [f11]
  '(lambda()
     (interactive)
     (if (buffer-file-name)
@@ -1123,12 +1008,6 @@ _d_  Dir
   (push-mark-command (point))
   (hydra-mark/body))
 
-;; (defun call-hydra-kill-ring-with-kill-line ()
-;;   "Call 'kill-line' then 'hydra-kill-ring/body'."
-;;   (interactive)
-;;   (kill-line)
-;;   (hydra-kill-ring/body))
-
 ;; Set advice
 ;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
 (defadvice find-file (after find-file-sudo activate)
@@ -1173,30 +1052,50 @@ _d_  Dir
  ((kbd "C-)") . parenthesize-to-end-of-line)
  ((kbd "C-\"") . double-quotes-to-end-of-line)
  ((kbd "C-'") . single-quotes-to-end-of-line)
- ((kbd "C-x") . hydra-control-x-prefix/body)
- ((kbd "C-c") . hydra-kill-ring/body)
  ((kbd "C-k") . kill-line)
- ((kbd "<C-S-escape>") . server-force-delete))
+ ((kbd "<C-S-escape>") . server-force-delete)
+ ((kbd "C-x C-f") . helm-find-files)
+ ((kbd "C-x r") . rename-buffer)
+ ((kbd "C-x C-r") . rename-file-and-buffer)
+ ((kbd "C-x d") . kill-this-buffer)
+ ((kbd "C-x C-S-d") . delete-file-and-buffer)
+ ((kbd "C-x b") . helm-mini)
+ ((kbd "C-x C-S-w") . split-window-vertically)
+ ((kbd "C-x C-S-s") . split-window-below)
+ ((kbd "C-x C-S-a") . split-window-horizontally)
+ ((kbd "C-x C-S-d") . split-window-right)
+ ((kbd "C-x C-S-f") . delete-other-windows)
+ ((kbd "C-c C-v") . yank-and-indent)
+ ((kbd "C-c C-d") . duplicate-line-or-region)
+ ((kbd "C-c C-r") . helm-show-kill-ring)
+ ((kbd "C-c C-p") . hydra-projectile/body)
+ ((kbd "C-c C-c") . hydra-cargo/body))
 
 ;; Set non-overriding non-package keybindings
-(global-set-key (kbd "M-s") 'next-line)
 (global-set-key (kbd "M-w") 'previous-line)
-(global-set-key (kbd "M-d") 'sp-forward-symbol)
+(global-set-key (kbd "M-s") 'next-line)
 (global-set-key (kbd "M-a") 'sp-backward-symbol)
-(global-set-key (kbd "<left>") 'left-char) ;; May use left-char-message in future
-(global-set-key (kbd "<right>") 'right-char) ;; May use right-char-message in future
-(global-set-key (kbd "<up>") 'previous-line) ;; May use previous-line-message in future
-(global-set-key (kbd "<down>") 'next-line) ;; May use next-line-message in future
-(global-set-key (kbd "C-s") 'end-of-buffer)
+(global-set-key (kbd "M-d") 'sp-forward-symbol)
+(global-set-key (kbd "<up>") 'previous-line)
+(global-set-key (kbd "<down>") 'next-line)
+(global-set-key (kbd "<left>") 'left-char)
+(global-set-key (kbd "<right>") 'right-char)
 (global-set-key (kbd "C-w") 'beginning-of-buffer)
-(global-set-key (kbd "C-S-k") 'kill-whole-line)
+(global-set-key (kbd "C-s") 'end-of-buffer)
 (global-set-key (kbd "C-S-a") (lambda() (interactive) (other-window 1)))
 (global-set-key (kbd "C-S-d") (lambda() (interactive) (other-window -1)))
+(global-set-key (kbd "C-S-k") 'kill-whole-line)
 (global-set-key (kbd "C-r") 'query-replace)
 (global-set-key (kbd "C-SPC") 'call-hydra-mark)
 (global-set-key (kbd "<C-backspace>") 'delete-backward-char)
 (global-set-key (kbd "<backspace>") 'custom-delete)
 (global-set-key (kbd "C-f") 'helm-occur)
+(global-set-key (kbd "<f12>") 'org-agenda)
+(global-set-key (kbd "C-o") 'hydra-org/body)
+
+;; Set non-overriding non-package mode-specific bindings
+;; (add-hook 'latex-mode-hook
+;; 	  (define-key latex-mode-map (kbd "C-S-c") 'tex-compile))
 
 ;; Set non-package major modes
 ;; e.g. (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
