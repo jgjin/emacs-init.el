@@ -54,10 +54,11 @@
  '(kept-new-versions 6)
  '(kept-old-versions 2)
  '(org-agenda-files (quote ("~/.emacs.d/org-agenda")))
- ;; '(package-selected-packages
- ;;   (quote
- ;;    (helm-ag pdf-tools package-build shut-up epl git commander f dash s origami flycheck-rust rust-mode iedit zzz-to-char yasnippet use-package spacemacs-theme smartparens scala-mode rainbow-delimiters powerline magit json-mode hungry-delete helm-swoop helm-projectile helm-mt helm-descbinds flycheck fill-column-indicator expand-region dumb-jump dashboard csv-mode company-quickhelp company-jedi company-irony-c-headers company-irony company-c-headers bm benchmark-init)))
- '(version-control t))
+ '(package-selected-packages
+   (quote
+    (lsp-ui helm company zzz-to-char use-package smartparens rainbow-delimiters powerline magit json-mode iedit hydra hungry-delete helm-projectile helm-descbinds helm-ag flycheck fill-column-indicator expand-region dashboard csv-mode company-quickhelp company-lsp cargo bm avy)))
+ '(version-control t)
+ '(warning-suppress-log-types (quote ((lsp-mode)))))
 
 ;; Set non-package faces (colors)
 (custom-set-faces
@@ -167,50 +168,23 @@ _i_ init  _s_ search
   :diminish company-mode
   :config
   ;; Enable global-company-mode
-  (add-hook 'after-init-hook 'global-company-mode))
+  (add-hook 'after-init-hook 'global-company-mode)
+  ;; Set no delay
+  (setq company-idle-delay 0)
+  ;; Wait for only 2 characters to start completions
+  (setq company-minimum-prefix-length 2))
 
-(use-package company-irony
+(use-package company-lsp
   :ensure t
   :config
-  ;; Add C(++) to company
-  (add-hook 'c-mode-hook (lambda()
-                           (add-to-list 'company-backends 'company-irony)))
-  (add-hook 'c++-mode-hook (lambda()
-                             (add-to-list 'company-backends 'company-irony))))
-
-(use-package company-irony-c-headers
-  :ensure t
-  :config
-  ;; Add C(++) headers to company
-  (add-hook 'c-mode-hook (lambda()
-                           (add-to-list 'company-backends 'company-c-headers)))
-  (add-hook 'c++-mode-hook (lambda()
-                             (add-to-list 'company-backends
-                                          'company-c-headers))))
-
-(use-package company-jedi
-  :ensure t
-  :config
-  ;; Add Python to company
-  (add-hook 'python-mode-hook (lambda()
-                                (add-to-list 'company-backends 'company-jedi))))
-
-;; Verify if these work
-;; (setq python-shell-interpreter "/usr/bin/python")
-;; (setq python-shell-interpreter-args "-O"))
+  ;; Add LSP to company backends
+  (push 'company-lsp company-backends))
 
 (use-package company-quickhelp
   :ensure t
   :config
-  ;; Enable popup for company
-  (company-quickhelp-mode 1))
-
-;; (use-package company-tern
-;;   :ensure t
-;;   :config
-;;   ;; Add JavaScript to company
-;;   (add-hook 'js2-mode-hook (lambda()
-;;                              (add-to-list 'company-backends 'company-tern))))
+  ;; Enable quickhelp popup
+  (company-quickhelp-mode))
 
 (use-package csv-mode
   :ensure t)
@@ -220,6 +194,7 @@ _i_ init  _s_ search
   :init
   ;; Start dashboard when emacs starts
   (dashboard-setup-startup-hook)
+
   :config
   ;; Set greeting message
   (setq dashboard-banner-logo-title "Welcome to Jason's BananaMacs!")
@@ -367,16 +342,12 @@ Normal  _s_ String _d_ Delete
 
   :config
   ;; Turn on global-flycheck-mode
-  (add-hook 'after-init-hook #'global-flycheck-mode)
-  ;; Try to set c++ standard to c++11
-  (add-hook 'c++-mode-hook
-            (lambda()
-              (setq flycheck-gcc-language-standard "c++11"))))
+  (add-hook 'after-init-hook #'global-flycheck-mode))
 
-(use-package flycheck-rust
-  :ensure t
-  :config
-  (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+;; ;; Try to set c++ standard to c++11
+  ;; (add-hook 'c++-mode-hook
+  ;;           (lambda()
+  ;;             (setq flycheck-gcc-language-standard "c++11"))))
 
 (use-package helm
   :ensure t
@@ -507,6 +478,64 @@ Normal  _s_ String _d_ Delete
   :bind
   (:map json-mode-map
         ("M-f" . jsons-print-path)))
+
+(use-package lsp-mode
+  :load-path "/home/banana/.emacs.d/elpa/lsp-mode-20180321.726"
+  :ensure t
+  :config
+  ;; Doesn't work???
+  ;; ;; Add LSP support to C++
+  ;; (lsp-define-stdio-client
+  ;;  lsp-c++-mode
+  ;;  "cpp"
+  ;;  (lambda () default-directory)
+  ;;  '("/usr/bin/clangd"))
+  ;; (add-hook 'c++-mode-hook #'lsp-c++-mode-enable)
+  ;; Add LSP support to Python
+  (lsp-define-stdio-client
+   lsp-python-mode
+   "Python"
+   (lambda () default-directory)
+   '("/usr/bin/pyls"))
+  (add-hook 'python-mode-hook #'lsp-python-mode-enable)
+  ;; Add LSP support to Rust
+  (lsp-define-stdio-client
+   lsp-rust-mode
+   "Rust"
+   (lambda () default-directory)
+   '("/usr/bin/rls"))
+  (add-hook 'rust-mode-hook #'lsp-rust-mode-enable)
+  ;; Set colors related to syntax highlighting
+  (set-face-attribute 'lsp-face-highlight-read nil
+		      :background "#555599")
+  (set-face-attribute 'lsp-face-highlight-textual nil
+		      :background "#555599")
+  (set-face-attribute 'lsp-face-highlight-write nil
+		      :background "#008787"))
+
+(use-package lsp-ui
+  :ensure t
+  :config
+  ;; Enable doc
+  (setq lsp-ui-doc-enable t)
+  ;; Enable peek
+  (setq lsp-ui-peek-enable t)
+  ;; Enable sideline
+  (setq lsp-ui-sideline-enable t)
+  ;; Enable flycheck and other higher-level UI modules
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+  ;; Doesn't work???
+  ;; ;; Add LSP UI support for C++
+  ;; (add-hook 'lsp-c++-mode-hook 'flycheck-mode)
+  ;; Add LSP UI support for Python
+  (add-hook 'lsp-python-mode-hook 'flycheck-mode)
+  ;; Add LSP UI support for Rust
+  (add-hook 'lsp-rust-mode-hook 'flycheck-mode)
+
+  :bind
+  (:map lsp-ui-mode-map
+        ("C-M-d" . #'lsp-ui-peek-find-definitions)
+        ("C-M-r" . #'lsp-ui-peek-find-references)))
 
 (use-package magit
   :ensure t
@@ -646,13 +675,13 @@ _C-r_ Ring  _w_ Widen
 	("M-SPC" . org-mark-element)
 	("C-M-SPC" . org-mark-subtree)))
 
-(use-package origami
-  :ensure t
-  :bind
-  (:map origami-mode-map
-	("<C-tab>" . origami-recursively-toggle-node)
-	("<C-S-iso-lefttab>" . origami-open-all-nodes)
-	("<C-M-tab>" . origami-close-all-nodes)))
+;; (use-package origami
+;;   :ensure t
+;;   :bind
+;;   (:map origami-mode-map
+;; 	("<C-tab>" . origami-recursively-toggle-node)
+;; 	("<C-S-iso-lefttab>" . origami-open-all-nodes)
+;; 	("<C-M-tab>" . origami-close-all-nodes)))
 
 (use-package powerline
   :ensure t
@@ -696,7 +725,7 @@ _ff_ Find   _a_ Ag    _b_ Switch _c_ Clear  _C-p_ Switch
 _fd_ Dwim   _g_ Gtags _k_ Kill   _A_ Add    _C-c_ Compile
 _fc_ Cwd    _o_ Occur          ^^_R_ Remove _C-r_ Run
 _r_  Recent                  ^^^^_X_ Clean  _p_   Prev err
-_d_  Dir                              ^^^^^^_n    Next err
+_d_  Dir                              ^^^^^^_n_   Next err
     "
     ("ff"  projectile-find-file)
     ("fd"  projectile-find-file-dwim)
@@ -1031,8 +1060,6 @@ _d_  Dir                              ^^^^^^_n    Next err
 ;; Set non-package keybindings
 ;; Set overriding non-package keybindings
 (bind-keys*
- ((kbd "C-M-a") . beginning-of-line)
- ((kbd "C-M-d") . end-of-line)
  ((kbd "C-q") . scroll-down-command)
  ((kbd "C-M-q") . beginning-of-defun)
  ((kbd "C-S-q") . switch-to-prev-buffer)
@@ -1044,7 +1071,6 @@ _d_  Dir                              ^^^^^^_n    Next err
  ((kbd "M-f") . goto-line)
  ((kbd "C-z") . undo)
  ((kbd "M-c") . comment-dwim)
- ((kbd "C-M-r") . repeat-complex-command)
  ((kbd "M-r") . query-replace-regexp)
  ((kbd "C-x <tab>") . indent-region-or-buffer)
  ((kbd "C-;") . iedit-mode)
@@ -1058,7 +1084,7 @@ _d_  Dir                              ^^^^^^_n    Next err
  ((kbd "C-x r") . rename-buffer)
  ((kbd "C-x C-r") . rename-file-and-buffer)
  ((kbd "C-x d") . kill-this-buffer)
- ((kbd "C-x C-S-d") . delete-file-and-buffer)
+ ((kbd "C-x C-M-d") . delete-file-and-buffer)
  ((kbd "C-x b") . helm-mini)
  ((kbd "C-x C-S-w") . split-window-vertically)
  ((kbd "C-x C-S-s") . split-window-below)
@@ -1068,8 +1094,8 @@ _d_  Dir                              ^^^^^^_n    Next err
  ((kbd "C-c C-v") . yank-and-indent)
  ((kbd "C-c C-d") . duplicate-line-or-region)
  ((kbd "C-c C-r") . helm-show-kill-ring)
- ((kbd "C-c C-p") . hydra-projectile/body)
- ((kbd "C-c C-c") . hydra-cargo/body))
+ ((kbd "C-c C-p") . hydra-projectile/body))
+ ;; ((kbd "C-c C-c") . hydra-cargo/body))
 
 ;; Set non-overriding non-package keybindings
 (global-set-key (kbd "M-w") 'previous-line)
@@ -1092,6 +1118,9 @@ _d_  Dir                              ^^^^^^_n    Next err
 (global-set-key (kbd "C-f") 'helm-occur)
 (global-set-key (kbd "<f12>") 'org-agenda)
 (global-set-key (kbd "C-o") 'hydra-org/body)
+(global-set-key (kbd "C-M-a") 'beginning-of-line)
+(global-set-key (kbd "C-M-d") 'end-of-line)
+(global-set-key (kbd "C-M-r") 'repeat-complex-command)
 
 ;; Set non-overriding non-package mode-specific bindings
 ;; (add-hook 'latex-mode-hook
