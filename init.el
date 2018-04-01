@@ -1,6 +1,7 @@
 ;;; package --- Summary
 
 ;;; Commentary:
+;;; Add color to LSP
 ;;; Add C-S-c tex-compile to LaTeX
 
 ;;; Code:
@@ -80,6 +81,9 @@
 (require 'diminish)
 (require 'bind-key)
 
+;; Diminish non-package minor modes
+(diminish 'abbrev-mode)
+
 ;; Set package configurations
 (use-package avy
   :ensure t
@@ -150,7 +154,7 @@
     "
 ^Commands^
 ^^^^^^-------------------------
-_b_ build _n_ clean  _t_ test
+_b_ build _n_ new    _t_ test
 _c_ clean _r_ repeat _u_ update
 _i_ init  _s_ search
     "
@@ -482,6 +486,7 @@ Normal  _s_ String _d_ Delete
 (use-package lsp-mode
   :load-path "/home/banana/.emacs.d/elpa/lsp-mode-20180321.726"
   :ensure t
+  :diminish eldoc-mode
   :config
   ;; Doesn't work???
   ;; ;; Add LSP support to C++
@@ -1094,8 +1099,8 @@ _d_  Dir                              ^^^^^^_n_   Next err
  ((kbd "C-c C-v") . yank-and-indent)
  ((kbd "C-c C-d") . duplicate-line-or-region)
  ((kbd "C-c C-r") . helm-show-kill-ring)
- ((kbd "C-c C-p") . hydra-projectile/body))
- ;; ((kbd "C-c C-c") . hydra-cargo/body))
+ ((kbd "C-c C-p") . hydra-projectile/body)
+ ((kbd "C-c C-c") . hydra-cargo/body))
 
 ;; Set non-overriding non-package keybindings
 (global-set-key (kbd "M-w") 'previous-line)
@@ -1108,8 +1113,10 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (global-set-key (kbd "<right>") 'right-char)
 (global-set-key (kbd "C-w") 'beginning-of-buffer)
 (global-set-key (kbd "C-s") 'end-of-buffer)
-(global-set-key (kbd "C-S-a") (lambda() (interactive) (other-window 1)))
-(global-set-key (kbd "C-S-d") (lambda() (interactive) (other-window -1)))
+(global-set-key (kbd "C-S-w") (lambda() (interactive) (windmove-up)))
+(global-set-key (kbd "C-S-s") (lambda() (interactive) (windmove-down)))
+(global-set-key (kbd "C-S-a") (lambda() (interactive) (windmove-left)))
+(global-set-key (kbd "C-S-d") (lambda() (interactive) (windmove-right)))
 (global-set-key (kbd "C-S-k") 'kill-whole-line)
 (global-set-key (kbd "C-r") 'query-replace)
 (global-set-key (kbd "C-SPC") 'call-hydra-mark)
