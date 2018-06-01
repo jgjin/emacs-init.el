@@ -32,7 +32,7 @@
 
 ;; Set tabbing options
 (setq c-default-style "linux"
-      tab-width 8
+      tab-width 4
       indent-tabs-mode t)
 
 ;; Create temp directory for auto-save and backup files
@@ -57,7 +57,7 @@
  '(org-agenda-files (quote ("~/.emacs.d/org-agenda")))
  '(package-selected-packages
    (quote
-    (lsp-ui helm company zzz-to-char use-package smartparens rainbow-delimiters powerline magit json-mode iedit hydra hungry-delete helm-projectile helm-descbinds helm-ag flycheck fill-column-indicator expand-region dashboard csv-mode company-quickhelp company-lsp cargo bm avy)))
+    (evil projectile helm-projectile pdf-tools lsp-ui helm company zzz-to-char use-package smartparens rainbow-delimiters powerline magit json-mode iedit hydra hungry-delete helm-descbinds helm-ag flycheck fill-column-indicator expand-region dashboard csv-mode company-quickhelp company-lsp cargo bm avy)))
  '(version-control t)
  '(warning-suppress-log-types (quote ((lsp-mode)))))
 
@@ -150,7 +150,7 @@
   :config
   (defhydra hydra-cargo
     (:hint nil
-     :idle 1.00)
+	   :idle 1.00)
     "
 ^Commands^
 ^^^^^^-------------------------
@@ -158,14 +158,14 @@ _b_ build _n_ new    _t_ test
 _c_ clean _r_ repeat _u_ update
 _i_ init  _s_ search
     "
-  ("b" cargo-process-build :exit t)
-  ("c" cargo-process-clean :exit t)
-  ("i" cargo-process-init :exit t)
-  ("n" cargo-process-new :exit t)
-  ("r" cargo-process-repeat :exit t)
-  ("s" cargo-process-search :exit t)
-  ("t" cargo-process-test :exit t)
-  ("u" cargo-process-update :exit t)))
+    ("b" cargo-process-build :exit t)
+    ("c" cargo-process-clean :exit t)
+    ("i" cargo-process-init :exit t)
+    ("n" cargo-process-new :exit t)
+    ("r" cargo-process-repeat :exit t)
+    ("s" cargo-process-search :exit t)
+    ("t" cargo-process-test :exit t)
+    ("u" cargo-process-update :exit t)))
 
 (use-package company
   :ensure t
@@ -228,7 +228,7 @@ _i_ init  _s_ search
   :config
   (defhydra hydra-mark
     (:hint nil
-     :idle 1.00)
+	   :idle 1.00)
     "
 Move    ^Small^      ^Containers^  ^Miscellaneous^
 ^^^^^^-----------------------------------------------
@@ -284,7 +284,7 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
 
   (defhydra hydra-rectangle-mark
     (:hint nil
-     :idle 1.00)
+	   :idle 1.00)
     "
 Move    ^Commands^
 ^^^^-------------------------
@@ -349,9 +349,9 @@ Normal  _s_ String _d_ Delete
   (add-hook 'after-init-hook #'global-flycheck-mode))
 
 ;; ;; Try to set c++ standard to c++11
-  ;; (add-hook 'c++-mode-hook
-  ;;           (lambda()
-  ;;             (setq flycheck-gcc-language-standard "c++11"))))
+;; (add-hook 'c++-mode-hook
+;;           (lambda()
+;;             (setq flycheck-gcc-language-standard "c++11"))))
 
 (use-package helm
   :ensure t
@@ -455,6 +455,11 @@ Normal  _s_ String _d_ Delete
 ;;    ("M-w" . helm-previous-line)
 ;;    ("M-s" . helm-next-line)
 ;;    ("C-e" . helm-multi-swoop-edit)))
+
+;; (use-package helm-xref
+;;   :ensure t
+;;   :config
+;;   (setq xref-show-xrefs-function 'helm-xref-show-xrefs))
 
 (use-package hl-line
   :config
@@ -593,8 +598,8 @@ Normal  _s_ String _d_ Delete
   :config
   (defhydra hydra-org
     (:hint nil
-     :idle 1.00)
-     "
+	   :idle 1.00)
+    "
 ^Kill^      ^Narrow^
 ^^^^-------------------
 _C-x_ Cut   _b_ Block
@@ -643,27 +648,27 @@ _C-r_ Ring  _w_ Widen
     ;; ("v" hydra-org-agenda/body :exit t)
     ("C-r"          helm-show-kill-ring :exit t))
 
-;;   (defhydra hydra-org-agenda
-;;     (:hint nil
-;;      :idle 1.00)
-;;     "
-;; ^Actions^    ^Period^
-;; ^^^^------------------
-;; _T_ Todo     _d_ Day
-;; _t_ Tags     _w_ Week
-;; _l_ Timeline _m_ Month
-;; _s_ Search   _y_ Year
-;;     "
-;;     ("T" (lambda() (interactive) (org-todo-list) (hydra-org/body)) :exit t)
-;;     ("t" (lambda() (interactive) (org-tags-view) (hydra-org/body)) :exit t)
-;;     ("l" (lambda() (interactive) (org-timeline) (hydra-org/body)) :exit t)
-;;     ("s" (lambda() (interactive) (org-search-view) (hydra-org/body)) :exit t)
-;;     ;; ("d" org-ag :exit t)
-;;     ;; ("w"  :exit t)
-;;     ;; ("m"  :exit t)
-;;     ;; ("y"  :exit t)
-;;     )
-    
+  ;;   (defhydra hydra-org-agenda
+  ;;     (:hint nil
+  ;;      :idle 1.00)
+  ;;     "
+  ;; ^Actions^    ^Period^
+  ;; ^^^^------------------
+  ;; _T_ Todo     _d_ Day
+  ;; _t_ Tags     _w_ Week
+  ;; _l_ Timeline _m_ Month
+  ;; _s_ Search   _y_ Year
+  ;;     "
+  ;;     ("T" (lambda() (interactive) (org-todo-list) (hydra-org/body)) :exit t)
+  ;;     ("t" (lambda() (interactive) (org-tags-view) (hydra-org/body)) :exit t)
+  ;;     ("l" (lambda() (interactive) (org-timeline) (hydra-org/body)) :exit t)
+  ;;     ("s" (lambda() (interactive) (org-search-view) (hydra-org/body)) :exit t)
+  ;;     ;; ("d" org-ag :exit t)
+  ;;     ;; ("w"  :exit t)
+  ;;     ;; ("m"  :exit t)
+  ;;     ;; ("y"  :exit t)
+  ;;     )
+  
   :bind
   (:map org-mode-map
 	("<M-return>" . org-insert-heading)
@@ -704,7 +709,7 @@ _C-r_ Ring  _w_ Widen
 
   (defhydra hydra-projectile-other-window
     (:hint nil
-     :idle 1.00)
+	   :idle 1.00)
     "
 ^Commands^
 ^^---------
@@ -720,7 +725,7 @@ _b_  Buffer
 
   (defhydra hydra-projectile
     (:hint nil
-     :idle 1.00)
+	   :idle 1.00)
     "
 Project: %(projectile-project-root)
 
@@ -1148,6 +1153,8 @@ _d_  Dir                              ^^^^^^_n_   Next err
 
 ;; ;; Report benchmark
 ;; (benchmark-init/show-durations-tabulated)
+
+;; (evil mode 1)
 
 (provide 'init)
 ;;; init.el ends here
