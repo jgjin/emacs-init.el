@@ -46,9 +46,6 @@
  '(backup-by-copying t)
  '(backup-directory-alist (quote ((".*" . "~/.emacs.d/temp/"))))
  '(confirm-kill-emacs (quote y-or-n-p))
- '(custom-safe-themes
-   (quote
-    ("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default)))
  '(delete-old-versions t)
  '(fci-rule-column 120)
  '(inhibit-startup-screen t)
@@ -57,7 +54,7 @@
  '(org-agenda-files (quote ("~/.emacs.d/org-agenda")))
  '(package-selected-packages
    (quote
-    (evil projectile helm-projectile pdf-tools lsp-ui helm company zzz-to-char use-package smartparens rainbow-delimiters powerline magit json-mode iedit hydra hungry-delete helm-descbinds helm-ag flycheck fill-column-indicator expand-region dashboard csv-mode company-quickhelp company-lsp cargo bm avy)))
+    (hide-lines evil projectile helm-projectile pdf-tools lsp-ui helm company zzz-to-char use-package smartparens rainbow-delimiters powerline magit json-mode iedit hydra hungry-delete helm-descbinds helm-ag flycheck fill-column-indicator expand-region dashboard csv-mode company-quickhelp company-lsp cargo bm avy)))
  '(version-control t)
  '(warning-suppress-log-types (quote ((lsp-mode)))))
 
@@ -280,6 +277,7 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("r"       (lambda() (interactive) (deactivate-mark) (rectangle-mark-mode) (hydra-rectangle-mark/body)) :exit t)
     ("C-c"     (lambda() (interactive) (kill-ring-save (region-beginning) (region-end)) (deactivate-mark)) :exit t)
     ("C-x"     (lambda() (interactive) (kill-region (region-beginning) (region-end))) :exit t)
+    ("C-l"     copy-lines :exit t)
     ("C-M-d"   duplicate-line-or-region :exit t))
 
   (defhydra hydra-rectangle-mark
@@ -461,6 +459,9 @@ Normal  _s_ String _d_ Delete
 ;;   :config
 ;;   (setq xref-show-xrefs-function 'helm-xref-show-xrefs))
 
+(use-package hide-lines
+  :ensure t)
+
 (use-package hl-line
   :config
   (global-hl-line-mode))
@@ -596,6 +597,8 @@ Normal  _s_ String _d_ Delete
 (use-package org
   :ensure t
   :config
+  (setq org-catch-invisible-edits 1)
+  (setq org-startup-folded 1)
   (defhydra hydra-org
     (:hint nil
 	   :idle 1.00)
@@ -1047,6 +1050,23 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (push-mark-command (point))
   (hydra-mark/body))
 
+;; https://www.emacswiki.org/emacs/CopyingWholeLines
+(defun copy-lines (arg)
+  "Copy whole lines.  If region is active, copy its whole lines (even if whole line is not in region).  Otherwise, copy ARG lines.  If last command was copy-lines, append lines."
+  (interactive "p")
+  (let ((beg (line-beginning-position))
+	(end (line-end-position arg)))
+    (when mark-active
+      (if (> (point) (mark))
+	  (setq beg (save-excursion (goto-char (mark)) (line-beginning-position)))
+	(setq end (save-excursion (goto-char (mark)) (line-end-position)))))
+    (if (eq last-command 'copy-lines)
+	(kill-append (buffer-substring beg end) (< end beg))
+      (kill-ring-save beg end)))
+  (kill-append "\n" nil)
+  (beginning-of-line (or (and arg (1+ arg)) 2))
+  (if (and arg (not (= 1 arg))) (message "%d lines copied" arg)))
+
 ;; Set advice
 ;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
 (defadvice find-file (after find-file-sudo activate)
@@ -1133,6 +1153,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (global-set-key (kbd "C-M-a") 'beginning-of-line)
 (global-set-key (kbd "C-M-d") 'end-of-line)
 (global-set-key (kbd "C-M-r") 'repeat-complex-command)
+(global-set-key (kbd "C-l") 'copy-lines)
 
 ;; Set non-overriding non-package mode-specific bindings
 ;; (add-hook 'latex-mode-hook
