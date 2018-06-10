@@ -1,6 +1,7 @@
 ;;; package --- Summary
 
 ;;; Commentary:
+;;; mc C-; visual fix
 ;;; Add color to LSP
 ;;; Add C-S-c tex-compile to LaTeX
 
@@ -147,7 +148,7 @@
   :config
   (defhydra hydra-cargo
     (:hint nil
-	   :idle 1.00)
+	   :idle 3.00)
     "
 ^Commands^
 ^^^^^^-------------------------
@@ -225,7 +226,7 @@ _i_ init  _s_ search
   :config
   (defhydra hydra-mark
     (:hint nil
-	   :idle 1.00)
+	   :idle 3.00)
     "
 Move    ^Small^      ^Containers^  ^Miscellaneous^
 ^^^^^^-----------------------------------------------
@@ -249,9 +250,9 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("C-a"     sp-backward-sexp)
     ("C-d"     sp-forward-sexp)
     ("M-q"     sp-next-sexp)
-    ("C-q"     scroll-down)
+    ("C-q"     (lambda() (interactive) (custom-mc-select-previous) (hydra-mc/body)) :exit t)
     ("M-e"     sp-previous-sexp)
-    ("C-e"     scroll-up)
+    ("C-e"     (lambda() (interactive) (custom-mc-select-next) (hydra-mc/body)) :exit t)
     ("p"       (lambda() (interactive) (deactivate-mark) (push-mark-command (point))))
     ("w"       er/mark-word)
     ("s"       er/mark-symbol)
@@ -282,7 +283,7 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
 
   (defhydra hydra-rectangle-mark
     (:hint nil
-	   :idle 1.00)
+	   :idle 3.00)
     "
 Move    ^Commands^
 ^^^^-------------------------
@@ -317,7 +318,20 @@ Normal  _s_ String _d_ Delete
     ("k"       avy-goto-char-timer)
     ("e"       exchange-point-and-mark)
     ("C-z"     undo)
-    ("r"       (lambda() (interactive) (deactivate-mark) (push-mark-command (point)) (hydra-mark/body)) :exit t)))
+    ("r"       (lambda() (interactive) (deactivate-mark) (push-mark-command (point)) (hydra-mark/body)) :exit t))
+
+  (defhydra hydra-mc
+    (:hint nil
+	   :idle 3.00)
+    "
+( ͡° ͜ʖ ͡°)
+    "
+    ("M-q"   mc/cycle-backward)
+    ("C-q"   custom-mc-select-previous)
+    ("C-M-q" mc/unmark-previous-like-this)
+    ("M-e"   mc/cycle-forward)
+    ("C-e"   custom-mc-select-next)
+    ("C-M-e" mc/unmark-next-like-this)))
 
 (use-package fill-column-indicator
   :ensure t
@@ -472,10 +486,10 @@ Normal  _s_ String _d_ Delete
 (use-package hydra
   :ensure t)
 
-(use-package iedit
-  :ensure t
-  :bind
-  (("C-;" . iedit-mode)))
+;; (use-package iedit
+;;   :ensure t
+;;   :bind
+;;   (("C-;" . iedit-mode)))
 
 ;; (use-package js2-mode
 ;;   :ensure t
@@ -594,6 +608,20 @@ Normal  _s_ String _d_ Delete
 ;; 	  ("<escape> <escape>" . term-send-esc)
 ;; 	  ("C-r" . term-send-reverse-search-history))))
 
+(use-package multiple-cursors
+  :ensure t
+  :config
+  (add-to-list 'mc/cmds-to-run-for-all 'custom-delete)
+
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mark/lambda-C-q-and-exit)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mark/lambda-C-e-and-exit)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/mc/cycle-backward)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/custom-mc-select-previous)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/mc/unmark-previous-like-this)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/mc/cycle-forward)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/custom-mc-select-next)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/mc/unmark-next-like-this))
+
 (use-package org
   :ensure t
   :config
@@ -601,7 +629,7 @@ Normal  _s_ String _d_ Delete
   (setq org-startup-folded 1)
   (defhydra hydra-org
     (:hint nil
-	   :idle 1.00)
+	   :idle 3.00)
     "
 ^Kill^      ^Narrow^
 ^^^^-------------------
@@ -653,7 +681,7 @@ _C-r_ Ring  _w_ Widen
 
   ;;   (defhydra hydra-org-agenda
   ;;     (:hint nil
-  ;;      :idle 1.00)
+  ;;      :idle 3.00)
   ;;     "
   ;; ^Actions^    ^Period^
   ;; ^^^^------------------
@@ -712,7 +740,7 @@ _C-r_ Ring  _w_ Widen
 
   (defhydra hydra-projectile-other-window
     (:hint nil
-	   :idle 1.00)
+	   :idle 3.00)
     "
 ^Commands^
 ^^---------
@@ -728,7 +756,7 @@ _b_  Buffer
 
   (defhydra hydra-projectile
     (:hint nil
-	   :idle 1.00)
+	   :idle 3.00)
     "
 Project: %(projectile-project-root)
 
@@ -1067,6 +1095,20 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (beginning-of-line (or (and arg (1+ arg)) 2))
   (if (and arg (not (= 1 arg))) (message "%d lines copied" arg)))
 
+(defun custom-mc-select-next ()
+  "Multiple cursors with custom behavior."
+  (interactive)
+  (when mark-active
+      (mc/mark-next-like-this 1)
+      (mc/cycle-forward)))
+
+(defun custom-mc-select-previous ()
+  "Multiple cursors with custom behavior."
+  (interactive)
+  (when mark-active
+      (mc/mark-previous-like-this 1)
+      (mc/cycle-backward)))
+
 ;; Set advice
 ;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
 (defadvice find-file (after find-file-sudo activate)
@@ -1091,10 +1133,8 @@ _d_  Dir                              ^^^^^^_n_   Next err
 ;; Set overriding non-package keybindings
 (bind-keys*
  ((kbd "C-q") . scroll-down-command)
- ((kbd "C-M-q") . beginning-of-defun)
  ((kbd "C-S-q") . switch-to-prev-buffer)
  ((kbd "C-e") . scroll-up-command)
- ((kbd "C-M-e") . end-of-defun)
  ((kbd "C-S-e") . switch-to-next-buffer)
  ((kbd "M-v") . yank-pop)
  ((kbd "C-M-v") . yank-pop-reverse)
@@ -1103,7 +1143,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
  ((kbd "M-c") . comment-dwim)
  ((kbd "M-r") . query-replace-regexp)
  ((kbd "C-x <tab>") . indent-region-or-buffer)
- ((kbd "C-;") . iedit-mode)
+ ((kbd "C-;") . (lambda() (interactive) (if (not mark-active) (er/mark-word)) (mc/mark-all-like-this) (hydra-mc/body)))
  ((kbd "C-(") . parenthesize-to-beginning-of-line)
  ((kbd "C-)") . parenthesize-to-end-of-line)
  ((kbd "C-\"") . double-quotes-to-end-of-line)
@@ -1154,6 +1194,8 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (global-set-key (kbd "C-M-d") 'end-of-line)
 (global-set-key (kbd "C-M-r") 'repeat-complex-command)
 (global-set-key (kbd "C-l") 'copy-lines)
+(global-set-key (kbd "C-M-e") 'end-of-defun)
+(global-set-key (kbd "C-M-q") 'beginning-of-defun)
 
 ;; Set non-overriding non-package mode-specific bindings
 ;; (add-hook 'latex-mode-hook
