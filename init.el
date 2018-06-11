@@ -1,6 +1,7 @@
 ;;; package --- Summary
 
 ;;; Commentary:
+;;; add new content to work desktop config
 ;;; mc C-; visual fix
 ;;; Add color to LSP
 ;;; Add C-S-c tex-compile to LaTeX
@@ -201,7 +202,7 @@ _i_ init  _s_ search
   ;; Set greeting message
   (setq dashboard-banner-logo-title "Welcome to Jason's BananaMacs!")
   ;; ;; Set dashboard image
-  (setq dashboard-startup-banner "~/.emacs.d/banana.png")
+  (setq dashboard-startup-banner "~/.emacs.d/banana/banana.png")
   ;; Set dashboard items
   (setq dashboard-items '((recents . 10)
                           (bookmarks . 0)
@@ -364,6 +365,13 @@ Normal  _s_ String _d_ Delete
 ;; (add-hook 'c++-mode-hook
 ;;           (lambda()
 ;;             (setq flycheck-gcc-language-standard "c++11"))))
+
+(use-package goto-chg
+  :ensure t
+  :bind
+  (require 'goto-chg)
+  ("C-<" . goto-last-change)
+  ("C->" . goto-last-change-reverse))
 
 (use-package helm
   :ensure t
