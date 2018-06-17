@@ -1,6 +1,7 @@
 ;;; package --- Summary
 
 ;;; Commentary:
+;;; Org mode C-a binding fix
 ;;; add new content to work desktop config
 ;;; mc C-; visual fix
 ;;; Add color to LSP
@@ -369,7 +370,6 @@ Normal  _s_ String _d_ Delete
 (use-package goto-chg
   :ensure t
   :bind
-  (require 'goto-chg)
   ("C-<" . goto-last-change)
   ("C->" . goto-last-change-reverse))
 
@@ -825,20 +825,13 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (require 'smartparens-config)
 
   :config
-  ;; Turn on smartparens-global-mode
+  ;; Turn on smartparens globally
   (smartparens-global-mode 1)
+  ;; Highlight matching parentheses
   (show-smartparens-global-mode 1)
-  ;; Turn off "strict mode"
-  (setq smartparens-strict-mode nil)
-  ;; ;; ???
-  ;; (setq sp-autoskip-closing-pair 'always)
-  ;; Do not insert parenthesis pair if point is before word
-  (sp-pair "(" nil :unless '(sp-point-before-word-p))
-  ;; Do not insert square brackets pair if point is before word
-  (sp-pair "[" nil :unless '(sp-point-before-word-p))
-  ;; Do not insert curly brackets pair if point is before word
-  (sp-pair "{" nil :unless '(sp-point-before-word-p))
-
+  ;; Turn on "strict mode" globally
+  (smartparens-global-strict-mode 1)
+  
   :bind
   (("C-a" . sp-backward-sexp)
    ("C-d" . sp-forward-sexp)
@@ -851,6 +844,24 @@ _d_  Dir                              ^^^^^^_n_   Next err
   :init
   ;; Load spacemacs-dark theme
   (load-theme 'spacemacs-dark t))
+
+(use-package undo-tree
+  :ensure t
+  :config
+  (global-undo-tree-mode 1)
+
+  (setq undo-tree-auto-save-history t)
+  (setq undo-tree-enable-undo-in-region t)
+  (setq undo-tree-visualizer-diff t)
+
+  (setq undo-tree-history-dir
+	(let ((dir (concat user-emacs-directory
+                           "undo-tree-history/")))
+          (make-directory dir :parents) dir))
+  (setq undo-tree-history-directory-alist `(("." . , undo-tree-history-dir)))
+
+  (add-hook 'write-file-functions #'undo-tree-save-history-hook)
+  (add-hook 'find-file-hook #'undo-tree-load-history-hook))
 
 (use-package zzz-to-char
   :ensure t
