@@ -1128,6 +1128,15 @@ _d_  Dir                              ^^^^^^_n_   Next err
       (mc/mark-previous-like-this 1)
       (mc/cycle-backward)))
 
+(defun org-custom-close ()
+  "Close current headings upward.  If last call was org-custom-close, close parent heading."
+  (interactive)
+  (if (eq last-command 'org-custom-close)
+      (progn
+	(outline-up-heading 1)
+	(org-cycle))
+    (outline-hide-leaves)))
+
 ;; Set advice
 ;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
 (defadvice find-file (after find-file-sudo activate)
