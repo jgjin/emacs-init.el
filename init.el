@@ -1,9 +1,7 @@
 ;;; package --- Summary
 
 ;;; Commentary:
-;;; Org mode C-a binding fix
-;;; add new content to work desktop config
-;;; mc C-; visual fix
+;;; investigate if package-archive contents yas-classic snippets interferes with package-refresh-contents
 ;;; Add color to LSP
 ;;; Add C-S-c tex-compile to LaTeX
 
@@ -57,7 +55,7 @@
  '(org-agenda-files (quote ("~/.emacs.d/org-agenda")))
  '(package-selected-packages
    (quote
-    (hide-lines evil projectile helm-projectile pdf-tools lsp-ui helm company zzz-to-char use-package smartparens rainbow-delimiters powerline magit json-mode iedit hydra hungry-delete helm-descbinds helm-ag flycheck fill-column-indicator expand-region dashboard csv-mode company-quickhelp company-lsp cargo bm avy)))
+    (yasnippet-snippets hide-lines evil projectile helm-projectile pdf-tools lsp-ui helm company zzz-to-char use-package smartparens rainbow-delimiters powerline magit json-mode iedit hydra hungry-delete helm-descbinds helm-ag flycheck fill-column-indicator expand-region dashboard csv-mode company-quickhelp company-lsp cargo bm avy)))
  '(version-control t)
  '(warning-suppress-log-types (quote ((lsp-mode)))))
 
@@ -167,6 +165,12 @@ _i_ init  _s_ search
     ("t" cargo-process-test :exit t)
     ("u" cargo-process-update :exit t)))
 
+(use-package color-identifiers-mode
+  :ensure t
+  :diminish color-identifiers-mode
+  :config
+  (global-color-identifiers-mode 1))
+
 (use-package company
   :ensure t
   :diminish company-mode
@@ -243,10 +247,10 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("M-s"     next-line)
     ("M-a"     sp-backward-symbol)
     ("M-d"     sp-forward-symbol)
-    ("<up>"    previous-line)
-    ("<down>"  next-line)
-    ("<left>"  left-char)
-    ("<right>" right-char)
+    ("<up>"    previous-line-message)
+    ("<down>"  next-line-message)
+    ("<left>"  left-char-message)
+    ("<right>" right-char-message)
     ("C-w"     beginning-of-buffer)
     ("C-s"     end-of-buffer)
     ("C-a"     sp-backward-sexp)
@@ -298,10 +302,10 @@ Normal  _s_ String _d_ Delete
     ("M-s"     next-line)
     ("M-a"     sp-backward-symbol)
     ("M-d"     sp-forward-symbol)
-    ("<up>"    previous-line)
-    ("<down>"  next-line)
-    ("<left>"  left-char)
-    ("<right>" right-char)
+    ("<up>"    previous-line-message)
+    ("<down>"  next-line-message)
+    ("<left>"  left-char-message)
+    ("<right>" right-char-message)
     ("C-w"     beginning-of-buffer)
     ("C-s"     end-of-buffer)
     ("C-a"     sp-backward-sexp)
@@ -494,10 +498,10 @@ Normal  _s_ String _d_ Delete
 (use-package hydra
   :ensure t)
 
-;; (use-package iedit
-;;   :ensure t
-;;   :bind
-;;   (("C-;" . iedit-mode)))
+(use-package iedit
+  :ensure t
+  :bind
+  (("C-;" . iedit-mode)))
 
 ;; (use-package js2-mode
 ;;   :ensure t
@@ -553,8 +557,8 @@ Normal  _s_ String _d_ Delete
   (setq lsp-ui-doc-enable t)
   ;; Enable peek
   (setq lsp-ui-peek-enable t)
-  ;; Enable sideline
-  (setq lsp-ui-sideline-enable t)
+  ;; Disable sideline
+  (setq lsp-ui-sideline-enable nil)
   ;; Enable flycheck and other higher-level UI modules
   (add-hook 'lsp-mode-hook 'lsp-ui-mode)
   ;; Doesn't work???
@@ -650,10 +654,10 @@ _C-r_ Ring  _w_ Widen
     ("M-s"          next-line)
     ("M-a"          sp-backward-symbol)
     ("M-d"          sp-forward-symbol)
-    ("<up>"         previous-line)
-    ("<down>"       next-line)
-    ("<left>"       left-char)
-    ("<right>"      right-char)
+    ("<up>"         previous-line-message)
+    ("<down>"       next-line-message)
+    ("<left>"       left-char-message)
+    ("<right>"      right-char-message)
     ("C-w"          beginning-of-buffer)
     ("C-s"          end-of-buffer)
     ("C-a"          sp-backward-sexp)
@@ -710,6 +714,7 @@ _C-r_ Ring  _w_ Widen
   
   :bind
   (:map org-mode-map
+	("C-a" . sp-backward-sexp)
 	("<M-return>" . org-insert-heading)
 	("<C-return>" . org-insert-heading-respect-content)
 	("<M-S-return>" . org-insert-todo-heading)
@@ -847,6 +852,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
 
 (use-package undo-tree
   :ensure t
+  :diminish undo-tree-mode
   :config
   (global-undo-tree-mode 1)
 
@@ -862,6 +868,23 @@ _d_  Dir                              ^^^^^^_n_   Next err
 
   (add-hook 'write-file-functions #'undo-tree-save-history-hook)
   (add-hook 'find-file-hook #'undo-tree-load-history-hook))
+
+(use-package yasnippet
+  :ensure t
+  :diminish yas-minor-mode
+  :config
+  (yas-global-mode 1)
+  :bind
+  (("<C-tab>" . yas-expand)
+   :map yas-keymap
+   ("TAB" . nil)
+   ("<tab>" . nil)
+   :map yas-minor-mode-map
+   ("TAB" . nil)
+   ("<tab>" . nil)))
+
+(use-package yasnippet-snippets
+  :ensure t)
 
 (use-package zzz-to-char
   :ensure t
@@ -977,7 +1000,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (message "%s" "Please use M-w instead of the up arrow key."))
 
 (defun next-line-message ()
-  "Execute 'left-char' with reminder not to use the down arrow key."
+  "Execute 'next-line' with reminder not to use the down arrow key."
   (interactive)
   (next-line)
   (message "%s" "Please use M-s instead of the down arrow key."))
@@ -1171,7 +1194,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
  ((kbd "M-c") . comment-dwim)
  ((kbd "M-r") . query-replace-regexp)
  ((kbd "C-x <tab>") . indent-region-or-buffer)
- ((kbd "C-;") . (lambda() (interactive) (if (not mark-active) (er/mark-word)) (mc/mark-all-like-this) (hydra-mc/body)))
+ ;; ((kbd "C-;") . (lambda() (interactive) (if (not mark-active) (er/mark-word)) (mc/mark-all-like-this) (hydra-mc/body)))
  ((kbd "C-(") . parenthesize-to-beginning-of-line)
  ((kbd "C-)") . parenthesize-to-end-of-line)
  ((kbd "C-\"") . double-quotes-to-end-of-line)
@@ -1198,12 +1221,12 @@ _d_  Dir                              ^^^^^^_n_   Next err
 ;; Set non-overriding non-package keybindings
 (global-set-key (kbd "M-w") 'previous-line)
 (global-set-key (kbd "M-s") 'next-line)
-(global-set-key (kbd "M-a") 'sp-backward-symbol)
-(global-set-key (kbd "M-d") 'sp-forward-symbol)
-(global-set-key (kbd "<up>") 'previous-line)
-(global-set-key (kbd "<down>") 'next-line)
-(global-set-key (kbd "<left>") 'left-char)
-(global-set-key (kbd "<right>") 'right-char)
+(global-set-key (kbd "M-a") 'left-char)
+(global-set-key (kbd "M-d") 'right-char)
+(global-set-key (kbd "<up>") 'previous-line-message)
+(global-set-key (kbd "<down>") 'next-line-message)
+(global-set-key (kbd "<left>") 'left-char-message)
+(global-set-key (kbd "<right>") 'right-char-message)
 (global-set-key (kbd "C-w") 'beginning-of-buffer)
 (global-set-key (kbd "C-s") 'end-of-buffer)
 (global-set-key (kbd "C-S-w") (lambda() (interactive) (windmove-up)))
