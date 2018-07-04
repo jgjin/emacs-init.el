@@ -4,6 +4,7 @@
 ;;; investigate if package-archive contents yas-classic snippets interferes with package-refresh-contents
 ;;; Add color to LSP
 ;;; Add C-S-c tex-compile to LaTeX
+;;; Swiper mc to mc hydra
 
 ;;; Code:
 
@@ -542,7 +543,9 @@ Normal  _s_ String _d_ Delete
    :map ivy-switch-buffer-map
    ("C-S-k" . ivy-switch-buffer-kill)
    :map ivy-minibuffer-map
+   ("C-r" . ivy-reverse-i-search)
    ("C-M-s" . ivy-next-line-and-call)
+   ("M-d" . ivy-dispatching-done)
    ("C-M-d" . ivy-dispatching-call)
    ("M-l" . ivy-avy)
    ("TAB" . ivy-alt-done)
@@ -898,13 +901,17 @@ _d_  Dir                              ^^^^^^_n_   Next err
 
 (use-package swiper
   :ensure t
+  :config
+  (add-to-list 'mc/cmds-to-run-once 'swiper-mc)
   :bind
   (("C-f" . swiper)
   (("C-S-f" . swiper-all)
    :map swiper-map
    ("M-l" . swiper-avy)
+   ("C-;" . swiper-mc)
    :map swiper-all-map
-   ("M-l" . swiper-avy))))
+   ("M-l" . swiper-avy)
+   ("C-;" . swiper-mc))))
 
 (use-package undo-tree
   :ensure t
@@ -1218,6 +1225,13 @@ _d_  Dir                              ^^^^^^_n_   Next err
 	(org-cycle))
     (outline-hide-leaves)))
 
+(defun swiper-input ()
+  "Either symbol at point or empty string if no symbol at point."
+  (interactive)
+  (if (symbol-at-point)
+      (format "%s" (thing-at-point 'symbol))
+    ""))
+
 ;; Set advice
 ;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
 (defadvice find-file (after find-file-sudo activate)
@@ -1297,7 +1311,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (global-set-key (kbd "C-SPC") 'call-hydra-mark)
 (global-set-key (kbd "<C-backspace>") 'hungry-delete-backward)
 (global-set-key (kbd "<backspace>") 'custom-delete)
-(global-set-key (kbd "C-f") 'swiper)
+(global-set-key (kbd "C-f") (lambda () (interactive) (swiper (swiper-input))))
 (global-set-key (kbd "<f12>") 'org-agenda)
 (global-set-key (kbd "C-o") 'hydra-org/body)
 (global-set-key (kbd "C-M-a") 'beginning-of-line)
