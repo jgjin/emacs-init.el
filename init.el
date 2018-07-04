@@ -53,6 +53,9 @@
  '(kept-new-versions 6)
  '(kept-old-versions 2)
  '(org-agenda-files (quote ("~/.emacs.d/org-agenda")))
+ '(package-selected-packages
+   (quote
+    (zzz-to-char yasnippet-snippets use-package undo-tree tabbar spacemacs-theme smartparens rainbow-delimiters powerline pdf-tools pcre2el neotree multiple-cursors monokai-alt-theme mode-icons magit lsp-ui json-mode iedit hydra hungry-delete ht hide-lines helm-swoop helm-projectile helm-flx helm-descbinds helm-ag goto-chg fill-column-indicator expand-region diminish dashboard csv-mode counsel company-quickhelp company-lsp color-identifiers-mode cask cargo bm all-the-icons)))
  '(version-control t)
  '(warning-suppress-log-types (quote ((lsp-mode)))))
 
@@ -528,6 +531,7 @@ Normal  _s_ String _d_ Delete
 (use-package ivy
   :ensure t
   :config
+  (setq ivy-re-builders-alist '((t . ivy--regex-ignore-order)))
   (setq ivy-wrap t)
   (setq ivy-action-wrap t)
   (setq ivy-use-virtual-buffers t)
@@ -540,6 +544,7 @@ Normal  _s_ String _d_ Delete
    :map ivy-minibuffer-map
    ("C-M-s" . ivy-next-line-and-call)
    ("C-M-d" . ivy-dispatching-call)
+   ("M-l" . ivy-avy)
    ("TAB" . ivy-alt-done)
    ("<C-tab>" . ivy-backward-kill-word)))
 
@@ -897,9 +902,9 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (("C-f" . swiper)
   (("C-S-f" . swiper-all)
    :map swiper-map
-   ("C-f" . swiper-all)
+   ("M-l" . swiper-avy)
    :map swiper-all-map
-   ("C-f" . swiper))))
+   ("M-l" . swiper-avy))))
 
 (use-package undo-tree
   :ensure t
@@ -1290,7 +1295,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (global-set-key (kbd "C-S-k") 'kill-whole-line)
 (global-set-key (kbd "C-r") 'query-replace)
 (global-set-key (kbd "C-SPC") 'call-hydra-mark)
-(global-set-key (kbd "<C-backspace>") 'delete-backward-char)
+(global-set-key (kbd "<C-backspace>") 'hungry-delete-backward)
 (global-set-key (kbd "<backspace>") 'custom-delete)
 (global-set-key (kbd "C-f") 'swiper)
 (global-set-key (kbd "<f12>") 'org-agenda)
