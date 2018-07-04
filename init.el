@@ -53,9 +53,6 @@
  '(kept-new-versions 6)
  '(kept-old-versions 2)
  '(org-agenda-files (quote ("~/.emacs.d/org-agenda")))
- '(package-selected-packages
-   (quote
-    (yasnippet-snippets hide-lines evil projectile helm-projectile pdf-tools lsp-ui helm company zzz-to-char use-package smartparens rainbow-delimiters powerline magit json-mode iedit hydra hungry-delete helm-descbinds helm-ag flycheck fill-column-indicator expand-region dashboard csv-mode company-quickhelp company-lsp cargo bm avy)))
  '(version-control t)
  '(warning-suppress-log-types (quote ((lsp-mode)))))
 
@@ -99,6 +96,11 @@
   :bind
   (("M-k" . avy-goto-char-timer)
    ("M-l" . avy-goto-line)))
+
+;; (use-package beacon
+;;   :ensure t
+;;   :config
+;;   (beacon-mode 1))
 
 ;; ;; Rename benchmark-init.x folder to benchmark-init
 ;; (use-package benchmark-init
@@ -193,6 +195,16 @@ _i_ init  _s_ search
   :config
   ;; Enable quickhelp popup
   (company-quickhelp-mode))
+
+(use-package counsel
+  :ensure t
+  :config
+  (counsel-mode 1)
+  :bind
+  (("M-x" . counsel-M-x)
+   ("C-h a" . counsel-apropos)
+   ("C-h b" . counsel-descbinds)
+   ("C-p" . counsel-ag)))
 
 (use-package csv-mode
   :ensure t)
@@ -377,68 +389,78 @@ Normal  _s_ String _d_ Delete
   ("C-<" . goto-last-change)
   ("C->" . goto-last-change-reverse))
 
-(use-package helm
-  :ensure t
-  :diminish helm-mode
-  :config
-  ;; ???
-  (setq helm-ff-file-name-history-use-recentf t)
-  ;; ???
-  (setq helm-move-to-line-cycle-in-source t)
-  ;; Set helm buffer to split current window
-  (setq helm-split-window-in-side-p t)
-  ;; Turn on helm-mode
-  (helm-mode 1)
-  ;; Allow helm buffer to auto-resize
-  (helm-autoresize-mode 1)
-  ;; Set helm-grep to default to ack-grep
-  (when (executable-find "ag")
-    (setq helm-grep-ag-command "ag --line-numbers -S --hidden --color --color-match '31;43' --nogroup %s %s %s")
-    (setq helm-grep-ag-pipe-cmd-switches '("--color-match '31;43'")))
-  ;; Add man pages to sources for helm-man-woman
-  (add-to-list 'helm-sources-using-default-as-input 'helm-source-man-pages)
-  ;; Add sources for helm-mini
-  (setq helm-mini-default-sources '(helm-source-buffers-list
-                                    helm-source-recentf
-                                    helm-source-bookmarks
-                                    helm-source-buffer-not-found))
+;; (use-package helm
+;;   :ensure t
+;;   :diminish helm-mode
+;;   :config
+;;   ;; ???
+;;   (setq helm-ff-file-name-history-use-recentf t)
+;;   ;; ???
+;;   (setq helm-move-to-line-cycle-in-source t)
+;;   ;; Set helm buffer to split current window
+;;   (setq helm-split-window-in-side-p t)
+;;   ;; Turn on helm-mode
+;;   (helm-mode 1)
+;;   ;; Allow helm buffer to auto-resize
+;;   (helm-autoresize-mode 1)
+;;   ;; Set helm-grep to default to ack-grep
+;;   (when (executable-find "ag")
+;;     (setq helm-grep-ag-command "ag --line-numbers -S --hidden --color --color-match '31;43' --nogroup %s %s %s")
+;;     (setq helm-grep-ag-pipe-cmd-switches '("--color-match '31;43'")))
+;;   ;; Add man pages to sources for helm-man-woman
+;;   (add-to-list 'helm-sources-using-default-as-input 'helm-source-man-pages)
+;;   ;; Add sources for helm-mini
+;;   (setq helm-mini-default-sources '(helm-source-buffers-list
+;;                                     helm-source-recentf
+;;                                     helm-source-bookmarks
+;;                                     helm-source-buffer-not-found))
   
-  :bind
-  (("M-x" . helm-M-x)
-   ("C-p" . helm-do-ag)
-   ("C-h a" . helm-apropos)
-   ("C-h f" . helm-man-woman)
-   ("C-h s" . helm-surfraw)
-   :map helm-find-files-map
-   ("M-w" . helm-previous-line)
-   ("M-a" . helm-find-files-up-one-level)
-   ("<C-tab>" . helm-find-files-up-one-level)
-   ("M-s" . helm-next-line)
-   ("M-d" . helm-execute-persistent-action)
-   ("<tab>" . helm-execute-persistent-action)
-   ("<C-return>" . helm-select-action)
-   :map helm-buffer-map
-   ("C-S-k" . helm-buffer-run-kill-buffers)
-   :map helm-map
-   ("M-w" . helm-previous-line)
-   ("M-a" . helm-find-files-up-one-level)
-   ("<C-tab>" . helm-find-files-up-one-level)
-   ("M-s" . helm-next-line)
-   ("M-d" . helm-execute-persistent-action)
-   ("<tab>" . helm-execute-persistent-action)
-   ("<C-return>" . helm-select-action)))
+;;   :bind
+;;   (("M-x" . helm-M-x)
+;;    ("C-p" . helm-do-ag)
+;;    ("C-h a" . helm-apropos)
+;;    ("C-h f" . helm-man-woman)
+;;    ("C-h s" . helm-surfraw)
+;;    :map helm-find-files-map
+;;    ("M-w" . helm-previous-line)
+;;    ("M-a" . helm-find-files-up-one-level)
+;;    ("<C-tab>" . helm-find-files-up-one-level)
+;;    ("M-s" . helm-next-line)
+;;    ("M-d" . helm-execute-persistent-action)
+;;    ("<tab>" . helm-execute-persistent-action)
+;;    ("<C-return>" . helm-select-action)
+;;    :map helm-buffer-map
+;;    ("C-S-k" . helm-buffer-run-kill-buffers)
+;;    :map helm-map
+;;    ("M-w" . helm-previous-line)
+;;    ("M-a" . helm-find-files-up-one-level)
+;;    ("<C-tab>" . helm-find-files-up-one-level)
+;;    ("M-s" . helm-next-line)
+;;    ("M-d" . helm-execute-persistent-action)
+;;    ("<tab>" . helm-execute-persistent-action)
+;;    ("<C-return>" . helm-select-action)))
 
-(use-package helm-ag
-  :ensure t)
+;; (use-package helm-ag
+;;   :ensure t)
 
-(use-package helm-descbinds
-  :ensure t
-  :config
-  ;; Enable helm-descbinds-mode
-  (helm-descbinds-mode)
+;; (use-package helm-company
+;;   :ensure t)
 
-  :bind
-  (("C-h b" . helm-descbinds)))
+;; (use-package helm-descbinds
+;;   :ensure t
+;;   :config
+;;   ;; Enable helm-descbinds-mode
+;;   (helm-descbinds-mode)
+
+;;   :bind
+;;   (("C-h b" . helm-descbinds)))
+
+;; (use-package helm-flx
+;;   :ensure t
+;;   :config
+;;   (setq helm-flx-for-helm-find-files t)
+;;   (setq helm-flx-for-helm-locate t)
+;;   (helm-flx-mode 1))
 
 ;; (use-package helm-mt
 ;;   :ensure t
@@ -447,11 +469,11 @@ Normal  _s_ String _d_ Delete
 ;;    :map term-raw-map
 ;;    ("C-t" . helm-mt)))
 
-(use-package helm-projectile
-  :ensure t
-  :config
-  ;; Enable projectile with helm
-  (helm-projectile-on))
+;; (use-package helm-projectile
+;;   :ensure t
+;;   :config
+;;   ;; Enable projectile with helm
+;;   (helm-projectile-on))
 
 ;; Check if works again
 ;; (use-package helm-swoop
@@ -502,6 +524,24 @@ Normal  _s_ String _d_ Delete
   :ensure t
   :bind
   (("C-;" . iedit-mode)))
+
+(use-package ivy
+  :ensure t
+  :config
+  (setq ivy-wrap t)
+  (setq ivy-action-wrap t)
+  (setq ivy-use-virtual-buffers t)
+  (setq enable-recursive-minibuffers t)
+  (ivy-mode 1)
+  :bind
+  (("C-c C-M-r" . ivy-resume)
+   :map ivy-switch-buffer-map
+   ("C-S-k" . ivy-switch-buffer-kill)
+   :map ivy-minibuffer-map
+   ("C-M-s" . ivy-next-line-and-call)
+   ("C-M-d" . ivy-dispatching-call)
+   ("TAB" . ivy-alt-done)
+   ("<C-tab>" . ivy-backward-kill-word)))
 
 ;; (use-package js2-mode
 ;;   :ensure t
@@ -689,7 +729,7 @@ _C-r_ Ring  _w_ Widen
     ;; ("a" org-agenda-file-to-front)
     ;; ("r" org-remove-file)
     ;; ("v" hydra-org-agenda/body :exit t)
-    ("C-r"          helm-show-kill-ring :exit t))
+    ("C-r"          counsel-yank-pop :exit t))
 
   ;;   (defhydra hydra-org-agenda
   ;;     (:hint nil
@@ -714,6 +754,7 @@ _C-r_ Ring  _w_ Widen
   
   :bind
   (:map org-mode-map
+	("C-M-w" . org-custom-close)
 	("C-a" . sp-backward-sexp)
 	("<M-return>" . org-insert-heading)
 	("<C-return>" . org-insert-heading-respect-content)
@@ -850,6 +891,16 @@ _d_  Dir                              ^^^^^^_n_   Next err
   ;; Load spacemacs-dark theme
   (load-theme 'spacemacs-dark t))
 
+(use-package swiper
+  :ensure t
+  :bind
+  (("C-f" . swiper)
+  (("C-S-f" . swiper-all)
+   :map swiper-map
+   ("C-f" . swiper-all)
+   :map swiper-all-map
+   ("C-f" . swiper))))
+
 (use-package undo-tree
   :ensure t
   :diminish undo-tree-mode
@@ -876,6 +927,8 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (yas-global-mode 1)
   :bind
   (("<C-tab>" . yas-expand)
+   ("<M-tab>" . yas-next-field)
+   ("<C-M-tab>" . company-yasnippet)
    :map yas-keymap
    ("TAB" . nil)
    ("<tab>" . nil)
@@ -1201,12 +1254,13 @@ _d_  Dir                              ^^^^^^_n_   Next err
  ((kbd "C-'") . single-quotes-to-end-of-line)
  ((kbd "C-k") . kill-line)
  ((kbd "<C-S-escape>") . server-force-delete)
- ((kbd "C-x C-f") . helm-find-files)
+ ;; ((kbd "C-x C-f") . helm-find-files)
+ ((kbd "C-x C-f") . counsel-find-file)
+ ((kbd "C-x b") . ivy-switch-buffer)
  ((kbd "C-x r") . rename-buffer)
  ((kbd "C-x C-r") . rename-file-and-buffer)
  ((kbd "C-x d") . kill-this-buffer)
  ((kbd "C-x C-M-d") . delete-file-and-buffer)
- ((kbd "C-x b") . helm-mini)
  ((kbd "C-x C-S-w") . split-window-vertically)
  ((kbd "C-x C-S-s") . split-window-below)
  ((kbd "C-x C-S-a") . split-window-horizontally)
@@ -1214,7 +1268,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
  ((kbd "C-x C-S-f") . delete-other-windows)
  ((kbd "C-c C-v") . yank-and-indent)
  ((kbd "C-c C-d") . duplicate-line-or-region)
- ((kbd "C-c C-r") . helm-show-kill-ring)
+ ((kbd "C-c C-r") . counsel-yank-pop)
  ((kbd "C-c C-p") . hydra-projectile/body)
  ((kbd "C-c C-c") . hydra-cargo/body))
 
@@ -1238,7 +1292,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (global-set-key (kbd "C-SPC") 'call-hydra-mark)
 (global-set-key (kbd "<C-backspace>") 'delete-backward-char)
 (global-set-key (kbd "<backspace>") 'custom-delete)
-(global-set-key (kbd "C-f") 'helm-occur)
+(global-set-key (kbd "C-f") 'swiper)
 (global-set-key (kbd "<f12>") 'org-agenda)
 (global-set-key (kbd "C-o") 'hydra-org/body)
 (global-set-key (kbd "C-M-a") 'beginning-of-line)
@@ -1252,6 +1306,8 @@ _d_  Dir                              ^^^^^^_n_   Next err
 ;; (add-hook 'latex-mode-hook
 ;; 	  (define-key latex-mode-map (kbd "C-S-c") 'tex-compile))
 
+(define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+
 ;; Set non-package major modes
 ;; e.g. (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-mode))
 
@@ -1261,6 +1317,14 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (when (string= (file-name-extension buffer-file-name) "pdf")
     (pdf-tools-install)))
 (add-hook 'find-file-hook 'pdf-view-hook)
+
+(defun minibuffer-setup-avoid-gc-hook ()
+  (setq gc-cons-threshold most-positive-fixnum))
+
+(defun minibuffer-exit-restore-gc-hook ()
+  (setq gc-cons-threshold 800000))
+(add-hook 'minibuffer-setup-hook #'minibuffer-setup-avoid-gc-hook)
+(add-hook 'minibuffer-exit-hook #'minibuffer-exit-restore-gc-hook)
 
 ;; Enable emacsclient
 (server-start)
