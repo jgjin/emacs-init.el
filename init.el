@@ -4,7 +4,6 @@
 ;;; investigate if package-archive contents yas-classic snippets interferes with package-refresh-contents
 ;;; Add color to LSP
 ;;; Add C-S-c tex-compile to LaTeX
-;;; Swiper mc to mc hydra
 
 ;;; Code:
 
@@ -341,20 +340,7 @@ Normal  _s_ String _d_ Delete
     ("k"       avy-goto-char-timer)
     ("e"       exchange-point-and-mark)
     ("C-z"     undo)
-    ("r"       (lambda() (interactive) (deactivate-mark) (push-mark-command (point)) (hydra-mark/body)) :exit t))
-
-  (defhydra hydra-mc
-    (:hint nil
-	   :idle 3.00)
-    "
-( ͡° ͜ʖ ͡°)
-    "
-    ("M-q"   mc/cycle-backward)
-    ("C-q"   custom-mc-select-previous)
-    ("C-M-q" mc/unmark-previous-like-this)
-    ("M-e"   mc/cycle-forward)
-    ("C-e"   custom-mc-select-next)
-    ("C-M-e" mc/unmark-next-like-this)))
+    ("r"       (lambda() (interactive) (deactivate-mark) (push-mark-command (point)) (hydra-mark/body)) :exit t)))
 
 (use-package fill-column-indicator
   :ensure t
@@ -674,9 +660,31 @@ Normal  _s_ String _d_ Delete
   :ensure t
   :config
   (add-to-list 'mc/cmds-to-run-for-all 'custom-delete)
-
   (add-to-list 'mc/cmds-to-run-once 'hydra-mark/lambda-C-q-and-exit)
   (add-to-list 'mc/cmds-to-run-once 'hydra-mark/lambda-C-e-and-exit)
+
+  (defhydra hydra-mc
+    (:hint nil
+	   :idle 3.00)
+    "
+( ͡° ͜ʖ ͡°)
+    "
+    ("<up>"    mc/mmlte--up)
+    ("<down>"  mc/mmlte--down)
+    ("<left>"  mc/mmlte--left)
+    ("<right>" mc/mmlte--right)
+    ("M-q"     mc/cycle-backward)
+    ("C-q"     custom-mc-select-previous)
+    ("C-M-q"   mc/unmark-previous-like-this)
+    ("M-e"     mc/cycle-forward)
+    ("C-e"     custom-mc-select-next)
+    ("C-M-e"   mc/unmark-next-like-this))
+
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/body)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/mc/mmlte--up)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/mc/mmlte--down)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/mc/mmlte--left)
+  (add-to-list 'mc/cmds-to-run-once 'hydra-mc/mc/mmlte--right)
   (add-to-list 'mc/cmds-to-run-once 'hydra-mc/mc/cycle-backward)
   (add-to-list 'mc/cmds-to-run-once 'hydra-mc/custom-mc-select-previous)
   (add-to-list 'mc/cmds-to-run-once 'hydra-mc/mc/unmark-previous-like-this)
@@ -904,16 +912,19 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (use-package swiper
   :ensure t
   :config
+  ;; Does this work? I want swiper-mc to then call hydra-mc/body
+  (delete 'swiper-mc mc/cmds-to-run-for-all)
   (add-to-list 'mc/cmds-to-run-once 'swiper-mc)
+  (add-to-list 'mc/cmds-to-run-once 'swiper-mc-custom)
   :bind
   (("C-f" . swiper)
-  (("C-S-f" . swiper-all)
+   ("C-S-f" . swiper-all)
    :map swiper-map
    ("M-l" . swiper-avy)
-   ("C-;" . swiper-mc)
+   ("C-;" . swiper-mc-custom)
    :map swiper-all-map
    ("M-l" . swiper-avy)
-   ("C-;" . swiper-mc))))
+   ("C-;" . swiper-mc-custom)))
 
 (use-package undo-tree
   :ensure t
@@ -980,7 +991,9 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (interactive)
   (if mark-active
       (duplicate-region)
-    (duplicate-line)))
+    (if (string-match-p "^[[:space:]]*$" (buffer-substring (line-beginning-position) (line-end-position)))
+	(copy-from-above-command)
+      (duplicate-line))))
 
 (defun duplicate-line ()
   "Duplicate line."
@@ -1243,6 +1256,12 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (if (symbol-at-point)
       (format "%s" (thing-at-point 'symbol))
     ""))
+
+(defun swiper-mc-custom ()
+  "Call swiper-mc then hydra-mc/body."
+  (interactive)
+  (hydra-mc/body)
+  (swiper-mc))
 
 ;; Set advice
 ;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
