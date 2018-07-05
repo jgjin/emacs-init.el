@@ -56,7 +56,7 @@
  '(org-agenda-files (quote ("~/.emacs.d/org-agenda")))
  '(package-selected-packages
    (quote
-    (zzz-to-char yasnippet-snippets use-package undo-tree tabbar spacemacs-theme smartparens rainbow-delimiters powerline pdf-tools pcre2el neotree multiple-cursors monokai-alt-theme mode-icons magit lsp-ui json-mode iedit hydra hungry-delete ht hide-lines helm-swoop helm-projectile helm-flx helm-descbinds helm-ag goto-chg fill-column-indicator expand-region diminish dashboard csv-mode counsel company-quickhelp company-lsp color-identifiers-mode cask cargo bm all-the-icons)))
+    (wakatime-mode package-build shut-up epl git commander f dash s zzz-to-char yasnippet-snippets use-package undo-tree tabbar spacemacs-theme smartparens rainbow-delimiters powerline pdf-tools pcre2el neotree multiple-cursors monokai-alt-theme mode-icons magit lsp-ui json-mode iedit hydra hungry-delete ht hide-lines helm-swoop helm-projectile helm-flx helm-descbinds helm-ag goto-chg fill-column-indicator expand-region diminish dashboard csv-mode counsel company-quickhelp company-lsp color-identifiers-mode cask cargo bm all-the-icons)))
  '(version-control t)
  '(warning-suppress-log-types (quote ((lsp-mode)))))
 
@@ -202,6 +202,7 @@ _i_ init  _s_ search
 
 (use-package counsel
   :ensure t
+  :diminish counsel-mode
   :config
   (counsel-mode 1)
   :bind
@@ -531,6 +532,7 @@ Normal  _s_ String _d_ Delete
 
 (use-package ivy
   :ensure t
+  :diminish ivy-mode
   :config
   (setq ivy-re-builders-alist '((t . ivy--regex-ignore-order)))
   (setq ivy-wrap t)
@@ -797,8 +799,8 @@ _C-r_ Ring  _w_ Widen
   :config
   ;; Enable projectile-mode
   (projectile-mode)
-  ;; Set helm as projectile completion system
-  (setq projectile-completion-system 'helm)
+  ;; Set ivy as projectile completion system
+  (setq projectile-completion-system 'ivy)
 
   (defhydra hydra-projectile-other-window
     (:hint nil
@@ -931,6 +933,16 @@ _d_  Dir                              ^^^^^^_n_   Next err
 
   (add-hook 'write-file-functions #'undo-tree-save-history-hook)
   (add-hook 'find-file-hook #'undo-tree-load-history-hook))
+
+(use-package wakatime-mode
+  :ensure t
+  :diminish wakatime-mode
+  :config
+  (add-hook 'global-wakatime-mode-hook
+	    (lambda()
+	      (interactive)
+	      (require 'wakatime-acct)))
+  (global-wakatime-mode 1))
 
 (use-package yasnippet
   :ensure t
@@ -1263,6 +1275,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
  ((kbd "C-M-v") . yank-pop-reverse)
  ((kbd "M-f") . goto-line)
  ((kbd "C-z") . undo)
+ ((kbd "C-M-z") . undo-tree-redo)
  ((kbd "M-c") . comment-dwim)
  ((kbd "M-r") . query-replace-regexp)
  ((kbd "C-x <tab>") . indent-region-or-buffer)
