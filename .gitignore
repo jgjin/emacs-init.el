@@ -1,0 +1,16 @@
+.cask/
+.lsp-session-*
+.mc-lists.el
+abbrev_defs
+auto-save-list/
+bm-repository
+elpa/
+emojis/
+flycheck*
+pdf-tools/
+projectile*
+recentf
+snippets/
+temp/
+tramp
+undo-tree-history/

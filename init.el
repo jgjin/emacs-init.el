@@ -2,7 +2,7 @@
 
 ;;; Commentary:
 ;;; investigate if package-archive contents yas-classic snippets interferes with package-refresh-contents
-;;; Add color to LSP
+;;; Check color to LSP
 ;;; Add C-S-c tex-compile to LaTeX
 
 ;;; Code:
@@ -22,8 +22,9 @@
 (package-initialize)
 
 ;; Fetch list of available packages
-(unless package-archive-contents
-  (package-refresh-contents))
+(package-refresh-contents)
+;; (unless package-archive-contents
+;;   )
 
 ;; Turn on/off non-package modes
 (tool-bar-mode -1)
@@ -36,6 +37,9 @@
       tab-width 4
       indent-tabs-mode t)
 
+;; Truncate lines to not go beyond screen
+(set-default 'truncate-lines t)
+
 ;; Create temp directory for auto-save and backup files
 ;; Set non-package variables
 (custom-set-variables
@@ -47,17 +51,17 @@
  '(backup-by-copying t)
  '(backup-directory-alist (quote ((".*" . "~/.emacs.d/temp/"))))
  '(confirm-kill-emacs (quote y-or-n-p))
+ '(custom-safe-themes
+   (quote
+    ("5a0eee1070a4fc64268f008a4c7abfda32d912118e080e18c3c865ef864d1bea" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default)))
  '(delete-old-versions t)
  '(fci-rule-column 120)
  '(inhibit-startup-screen t)
  '(kept-new-versions 6)
  '(kept-old-versions 2)
- '(org-agenda-files (quote ("~/.emacs.d/org-agenda")))
  '(package-selected-packages
    (quote
-    (wakatime-mode package-build shut-up epl git commander f dash s zzz-to-char yasnippet-snippets use-package undo-tree tabbar spacemacs-theme smartparens rainbow-delimiters powerline pdf-tools pcre2el neotree multiple-cursors monokai-alt-theme mode-icons magit lsp-ui json-mode iedit hydra hungry-delete ht hide-lines helm-swoop helm-projectile helm-flx helm-descbinds helm-ag goto-chg fill-column-indicator expand-region diminish dashboard csv-mode counsel company-quickhelp company-lsp color-identifiers-mode cask cargo bm all-the-icons)))
- '(version-control t)
- '(warning-suppress-log-types (quote ((lsp-mode)))))
+    (org-bullets poly-markdown ess apropospriate-theme ag pdf-tools vlf company-tabnine haskell-mode package-build shut-up epl git commander f dash s cask zzz-to-char yasnippet-snippets yasnippet undo-tree spacemacs-theme smartparens rainbow-delimiters projectile powerline multiple-cursors magit lsp-ui json-mode iedit hydra hungry-delete hide-lines goto-chg flycheck-rust flycheck fill-column-indicator expand-region dashboard csv-mode counsel company-quickhelp company-lsp company color-identifiers-mode cargo bm avy use-package diminish))))
 
 ;; Set non-package faces (colors)
 (custom-set-faces
@@ -72,6 +76,10 @@
 ;; Font type set in .Xresources, could be set here
 ;; (set-face-attribute 'default t :font FONT)
 
+;; Set transparency
+;; (set-frame-parameter (selected-frame) 'alpha '(85 . 50))
+;; (add-to-list 'default-frame-alist '(alpha . (85 . 50)))
+
 ;; Enable use-package
 ;; See https://github.com/jwiegley/use-package for explanation
 (eval-when-compile
@@ -83,6 +91,33 @@
 (diminish 'abbrev-mode)
 
 ;; Set package configurations
+(use-package ag
+  :ensure t)
+
+;; (use-package apropospriate-theme
+;;   :ensure t
+;;   :defer t
+;;   :init
+;;   (defun load-apropospriate-light-for-new-frames (&optional frame)
+;;     "Load apropospriate-light theme for new frames."
+;;     (interactive)
+;;     (with-selected-frame (or frame (selected-frame))
+;;       (load-theme 'apropospriate-light t)))
+
+;;   (defun load-apropospriate-dark-for-new-frames (&optional frame)
+;;     "Load apropospriate-dark theme for new frames."
+;;     (interactive)
+;;     (with-selected-frame (or frame (selected-frame))
+;;       (load-theme 'apropospriate-dark t)))
+  
+;;   (if (daemonp)
+;;       (add-hook 'after-make-frame-functions
+;; 		'load-apropospriate-dark-for-new-frames))
+;;   (load-theme 'apropospriate-dark t)
+;;   ;; (set-face-attribute 'default nil :background "#fff4ee")
+;;   ;; (set-face-background 'font-lock-comment-face "#f5eae5")
+;;   )
+
 (use-package avy
   :ensure t
   :config
@@ -99,11 +134,6 @@
   :bind
   (("M-k" . avy-goto-char-timer)
    ("M-l" . avy-goto-line)))
-
-;; (use-package beacon
-;;   :ensure t
-;;   :config
-;;   (beacon-mode 1))
 
 ;; ;; Rename benchmark-init.x folder to benchmark-init
 ;; (use-package benchmark-init
@@ -145,8 +175,8 @@
    ("C-M-SPC" . bm-previous)))
 
 ;; Needed for installing pdf-tools initially
-;; (use-package cask
-;;   :ensure t)
+(use-package cask
+  :ensure t)
 
 (use-package cargo
   :ensure t
@@ -182,22 +212,33 @@ _i_ init  _s_ search
   :config
   ;; Enable global-company-mode
   (add-hook 'after-init-hook 'global-company-mode)
-  ;; Set no delay
+  ;; Set minimal delay
   (setq company-idle-delay 0)
-  ;; Wait for only 2 characters to start completions
-  (setq company-minimum-prefix-length 2))
+  ;; Wait for only 1 character to start completions
+  (setq company-minimum-prefix-length 1)
+  (setq company-show-numbers t))
 
-(use-package company-lsp
-  :ensure t
-  :config
-  ;; Add LSP to company backends
-  (push 'company-lsp company-backends))
+;; (use-package company-lsp
+;;   :ensure t
+;;   :commands company-lsp
+;;   :config
+;;   ;; Add LSP to company backends
+;;   (push 'company-lsp company-backends))
 
 (use-package company-quickhelp
   :ensure t
   :config
   ;; Enable quickhelp popup
-  (company-quickhelp-mode))
+  (company-quickhelp-mode)
+
+  :bind
+  (:map company-active-map
+        ("RET" . nil)))
+
+;; (use-package company-tabnine
+;;   :ensure t
+;;   :config
+;;   (add-to-list 'company-backends #'company-tabnine))
 
 (use-package counsel
   :ensure t
@@ -241,7 +282,25 @@ _i_ init  _s_ search
 (use-package dired
   :bind
   ;; Overrides M-s as a prefix key
-  (("M-s" . next-line)))
+  (:map dired-mode-map
+	("M-s" . next-line)))
+
+;; (use-package ein
+;;   :ensure t)
+
+;; On first installation, restart emacs --daemon and respond yes to downloading emojis
+;; Emojis will be put in .emacs.d/emojis/
+(use-package emojify
+  :ensure t
+  :config
+  (add-hook 'after-init-hook #'global-emojify-mode))
+
+(use-package ess
+  :ensure t
+  :bind
+  (:map inferior-ess-r-mode-map
+  	("<up>" . comint-previous-input)
+  	("<down>" . comint-next-input)))
 
 (use-package expand-region
   :ensure t
@@ -261,8 +320,8 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     "
     ("M-w"     previous-line)
     ("M-s"     next-line)
-    ("M-a"     sp-backward-symbol)
-    ("M-d"     sp-forward-symbol)
+    ("M-a"     left-char)
+    ("M-d"     right-char)
     ("<up>"    previous-line-message)
     ("<down>"  next-line-message)
     ("<left>"  left-char-message)
@@ -271,10 +330,12 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("C-s"     end-of-buffer)
     ("C-a"     sp-backward-sexp)
     ("C-d"     sp-forward-sexp)
-    ("M-q"     sp-next-sexp)
+    ("M-q"     sp-backward-delete-word)
     ("C-q"     (lambda() (interactive) (custom-mc-select-previous) (hydra-mc/body)) :exit t)
-    ("M-e"     sp-previous-sexp)
+    ("C-M-q"   sp-beginning-of-sexp)
+    ("M-e"     sp-delete-word)
     ("C-e"     (lambda() (interactive) (custom-mc-select-next) (hydra-mc/body)) :exit t)
+    ("C-M-e"   sp-end-of-sexp)
     ("p"       (lambda() (interactive) (deactivate-mark) (push-mark-command (point))))
     ("w"       er/mark-word)
     ("s"       er/mark-symbol)
@@ -293,6 +354,8 @@ Normal  _p_ Point    _q_ In ''     _u_       Url
     ("t"       er/mark-inner-tag)
     ("T"       er/mark-outer-tag)
     ("k"       avy-goto-char-timer)
+    ("l"       avy-goto-line)
+    ("C-f"     swiper)
     ("e"       exchange-point-and-mark)
     ("C-SPC"   (er/expand-region 1))
     ("C-M-SPC" (er/contract-region 1))
@@ -316,8 +379,8 @@ Normal  _s_ String _d_ Delete
     "
     ("M-w"     previous-line)
     ("M-s"     next-line)
-    ("M-a"     sp-backward-symbol)
-    ("M-d"     sp-forward-symbol)
+    ("M-a"     left-char)
+    ("M-d"     right-char)
     ("<up>"    previous-line-message)
     ("<down>"  next-line-message)
     ("<left>"  left-char-message)
@@ -326,9 +389,9 @@ Normal  _s_ String _d_ Delete
     ("C-s"     end-of-buffer)
     ("C-a"     sp-backward-sexp)
     ("C-d"     sp-forward-sexp)
-    ("M-q"     sp-next-sexp)
+    ("M-q"     sp-backward-delete-word)
     ("C-q"     scroll-down)
-    ("M-e"     sp-previous-sexp)
+    ("M-e"     sp-delete-word)
     ("C-e"     scroll-up)
     ("s"       string-rectangle :exit t)
     ("c"       copy-rectangle-as-kill :exit t)
@@ -369,6 +432,12 @@ Normal  _s_ String _d_ Delete
   ;; Turn on global-flycheck-mode
   (add-hook 'after-init-hook #'global-flycheck-mode))
 
+(use-package flycheck-rust
+  :ensure t
+  :config
+  (with-eval-after-load 'rust-mode
+    (add-hook 'flycheck-mode-hook #'flycheck-rust-setup)))
+
 ;; ;; Try to set c++ standard to c++11
 ;; (add-hook 'c++-mode-hook
 ;;           (lambda()
@@ -379,6 +448,9 @@ Normal  _s_ String _d_ Delete
   :bind
   ("C-<" . goto-last-change)
   ("C->" . goto-last-change-reverse))
+
+(use-package haskell-mode
+  :ensure t)
 
 ;; (use-package helm
 ;;   :ensure t
@@ -405,7 +477,7 @@ Normal  _s_ String _d_ Delete
 ;;                                     helm-source-recentf
 ;;                                     helm-source-bookmarks
 ;;                                     helm-source-buffer-not-found))
-  
+
 ;;   :bind
 ;;   (("M-x" . helm-M-x)
 ;;    ("C-p" . helm-do-ag)
@@ -503,7 +575,8 @@ Normal  _s_ String _d_ Delete
 
 (use-package hl-line
   :config
-  (global-hl-line-mode))
+  (global-hl-line-mode)
+  (set-face-background 'hl-line "#c4cedd"))
 
 (use-package hungry-delete
   :ensure t)
@@ -515,6 +588,11 @@ Normal  _s_ String _d_ Delete
   :ensure t
   :bind
   (("C-;" . iedit-mode)))
+
+;; (use-package intero
+;;   :ensure t
+;;   :config
+;;   (intero-global-mode 1))
 
 (use-package ivy
   :ensure t
@@ -551,69 +629,68 @@ Normal  _s_ String _d_ Delete
   (:map json-mode-map
         ("M-f" . jsons-print-path)))
 
+;; (use-package lsp-java
+;;   :ensure t
+;;   :config
+;;   (add-hook 'java-mode-hook #'lsp-java-enable)
+;; (setq lsp-java--workspace-folders (list "~/fakeproj"
+;;                                         "~/fakeproj2")))
+
+;; https://vxlabs.com/2018/06/08/python-language-server-with-emacs-and-lsp-mode/
 (use-package lsp-mode
-  :load-path "/home/banana/.emacs.d/elpa/lsp-mode-20180321.726"
   :ensure t
+  :commands lsp
   :diminish eldoc-mode
+  :init
+  (require 'lsp-clients)
+  
   :config
-  ;; Doesn't work???
-  ;; ;; Add LSP support to C++
-  ;; (lsp-define-stdio-client
-  ;;  lsp-c++-mode
-  ;;  "cpp"
-  ;;  (lambda () default-directory)
-  ;;  '("/usr/bin/clangd"))
-  ;; (add-hook 'c++-mode-hook #'lsp-c++-mode-enable)
-  ;; Add LSP support to Python
-  (lsp-define-stdio-client
-   lsp-python-mode
-   "Python"
-   (lambda () default-directory)
-   '("/usr/bin/pyls"))
-  (add-hook 'python-mode-hook #'lsp-python-mode-enable)
-  ;; Add LSP support to Rust
-  (lsp-define-stdio-client
-   lsp-rust-mode
-   "Rust"
-   (lambda () default-directory)
-   '("/usr/bin/rls"))
-  (add-hook 'rust-mode-hook #'lsp-rust-mode-enable)
-  ;; Set colors related to syntax highlighting
+  ;; Turn on LSP automatically for all programming modes
+  (add-hook 'prog-mode-hook #'lsp)
+
+  ;; (lsp-define-stdio-client lsp-R "R"
+  ;;                          (lambda () default-directory)
+  ;; 			   '("R" "--slave" "-e" "languageserver::run()"))
+  ;; (add-hook 'R-mode-hook #'lsp-R-enable)
+  
   (set-face-attribute 'lsp-face-highlight-read nil
 		      :background "#555599")
   (set-face-attribute 'lsp-face-highlight-textual nil
 		      :background "#555599")
   (set-face-attribute 'lsp-face-highlight-write nil
-		      :background "#008787"))
+		      :background "#008787")
 
-(use-package lsp-ui
-  :ensure t
-  :config
-  ;; Enable doc
-  (setq lsp-ui-doc-enable t)
-  ;; Enable peek
-  (setq lsp-ui-peek-enable t)
-  ;; Disable sideline
-  (setq lsp-ui-sideline-enable nil)
-  ;; Enable flycheck and other higher-level UI modules
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
-  ;; Doesn't work???
-  ;; ;; Add LSP UI support for C++
-  ;; (add-hook 'lsp-c++-mode-hook 'flycheck-mode)
-  ;; Add LSP UI support for Python
-  (add-hook 'lsp-python-mode-hook 'flycheck-mode)
-  ;; Add LSP UI support for Rust
-  (add-hook 'lsp-rust-mode-hook 'flycheck-mode)
+  (use-package lsp-ui
+    :ensure t
+    :commands lsp-ui-mode
+    :config
+    ;; Enable doc
+    (setq lsp-ui-doc-enable t)
+    ;; Enable peek
+    (setq lsp-ui-peek-enable t)
+    ;; Enable sideline
+    (setq lsp-ui-sideline-enable t)
+    ;; Ignore duplicates
+    (setq lsp-ui-sideline-ignore-duplicate t)
+    ;; Enable flycheck and other higher-level UI modules
+    (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+    
+    :bind
+    (:map lsp-ui-mode-map
+          ("C-M-S-d" . #'lsp-ui-peek-find-definitions)
+          ("C-M-r" . #'lsp-ui-peek-find-references)))
 
-  :bind
-  (:map lsp-ui-mode-map
-        ("C-M-d" . #'lsp-ui-peek-find-definitions)
-        ("C-M-r" . #'lsp-ui-peek-find-references)))
+  (use-package company-lsp
+    :commands company-lsp
+    :config
+    (push 'company-lsp company-backends)))
 
 (use-package magit
   :ensure t
   :bind
-  ("M-g" . magit-status))
+  ("M-g" . magit-status)
+  (:map magit-status-mode-map
+	("M-w" . previous-line)))
 
 ;; ;; https://www.emacswiki.org/emacs/MultiTerm
 ;; ;; http://rawsyntax.com/blog/learn-emacs-zsh-and-multi-term
@@ -662,7 +739,7 @@ Normal  _s_ String _d_ Delete
   (add-to-list 'mc/cmds-to-run-for-all 'custom-delete)
   (add-to-list 'mc/cmds-to-run-once 'hydra-mark/lambda-C-q-and-exit)
   (add-to-list 'mc/cmds-to-run-once 'hydra-mark/lambda-C-e-and-exit)
-
+  
   (defhydra hydra-mc
     (:hint nil
 	   :idle 3.00)
@@ -710,8 +787,8 @@ _C-r_ Ring  _w_ Widen
     "
     ("M-w"          previous-line)
     ("M-s"          next-line)
-    ("M-a"          sp-backward-symbol)
-    ("M-d"          sp-forward-symbol)
+    ("M-a"          left-char)
+    ("M-d"          right-char)
     ("<up>"         previous-line-message)
     ("<down>"       next-line-message)
     ("<left>"       left-char-message)
@@ -720,9 +797,9 @@ _C-r_ Ring  _w_ Widen
     ("C-s"          end-of-buffer)
     ("C-a"          sp-backward-sexp)
     ("C-d"          sp-forward-sexp)
-    ("M-q"          sp-next-sexp)
+    ("M-q"          sp-backward-delete-word)
     ("C-q"          scroll-down)
-    ("M-e"          sp-previous-sexp)
+    ("M-e"          sp-delete-word)
     ("C-e"          scroll-up)
     ("<M-return>"   org-insert-heading)
     ("<C-return>"   org-insert-heading-respect-content)
@@ -774,6 +851,7 @@ _C-r_ Ring  _w_ Widen
   (:map org-mode-map
 	("C-M-w" . org-custom-close)
 	("C-a" . sp-backward-sexp)
+	("M-a" . left-char)
 	("<M-return>" . org-insert-heading)
 	("<C-return>" . org-insert-heading-respect-content)
 	("<M-S-return>" . org-insert-todo-heading)
@@ -788,6 +866,21 @@ _C-r_ Ring  _w_ Widen
 	("M-SPC" . org-mark-element)
 	("C-M-SPC" . org-mark-subtree)))
 
+;; https://thraxys.wordpress.com/2016/01/14/pimp-up-your-org-agenda/
+(use-package org-bullets
+  :ensure t
+  :init
+  (setq org-bullets-bullet-list '("🥑" "🍌" "🍒" "🍇" "🥝" "🍋" "🍑" "🍓" "🍅" "🍉"))
+  (setq org-todo-keywords
+	'((sequence "👋 TODO"
+		    "👌 DOING"
+		    "👍 DONE"
+		    "⏱ WAITING"
+		    "❌ CANCELLED")))
+  
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
 ;; (use-package origami
 ;;   :ensure t
 ;;   :bind
@@ -795,6 +888,12 @@ _C-r_ Ring  _w_ Widen
 ;; 	("<C-tab>" . origami-recursively-toggle-node)
 ;; 	("<C-S-iso-lefttab>" . origami-open-all-nodes)
 ;; 	("<C-M-tab>" . origami-close-all-nodes)))
+
+(use-package poly-markdown
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode)
+  (add-to-list 'auto-mode-alist '("\\.Rmd" . poly-markdown-mode))))
 
 (use-package powerline
   :ensure t
@@ -874,7 +973,14 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (use-package rust-mode
   :ensure t
   :interpreter
-  ("rs" . rust-mode))
+  ("rs" . rust-mode)
+  :config
+  (projectile-register-project-type
+   'rust-cargo '("Cargo.toml")
+   :compilation-dir "."
+   :compile "cargo build"
+   :run "cargo run"
+   :test "cargo test"))
 
 (use-package scala-mode
   :interpreter
@@ -899,15 +1005,31 @@ _d_  Dir                              ^^^^^^_n_   Next err
   :bind
   (("C-a" . sp-backward-sexp)
    ("C-d" . sp-forward-sexp)
-   ("M-q" . sp-next-sexp)
-   ("M-e" . sp-previous-sexp)))
+   ("M-q" . sp-backward-delete-word)
+   ("M-e" . sp-delete-word)))
 
 (use-package spacemacs-theme
   :ensure t
   :defer t
   :init
-  ;; Load spacemacs-dark theme
-  (load-theme 'spacemacs-dark t))
+  (defun load-spacemacs-light-for-new-frames (&optional frame)
+    "Load spacemacs-light theme for new frames."
+    (interactive)
+    (with-selected-frame (or frame (selected-frame))
+      (load-theme 'spacemacs-light t)))
+
+  (defun load-spacemacs-dark-for-new-frames (&optional frame)
+    "Load spacemacs-dark theme for new frames."
+    (interactive)
+    (with-selected-frame (or frame (selected-frame))
+      (load-theme 'spacemacs-dark t)))
+  
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions
+		'load-spacemacs-dark-for-new-frames))
+  (load-theme 'spacemacs-dark t)
+  (set-face-attribute 'default nil :background "#fff4ee")
+  (set-face-background 'font-lock-comment-face "#f5eae5"))
 
 (use-package swiper
   :ensure t
@@ -945,15 +1067,12 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (add-hook 'write-file-functions #'undo-tree-save-history-hook)
   (add-hook 'find-file-hook #'undo-tree-load-history-hook))
 
-(use-package wakatime-mode
+(use-package vlf
   :ensure t
-  :diminish wakatime-mode
   :config
-  (add-hook 'global-wakatime-mode-hook
-	    (lambda()
-	      (interactive)
-	      (require 'wakatime-acct)))
-  (global-wakatime-mode 1))
+  (require 'vlf-setup)
+  (eval-after-load "vlf"
+    '(define-key vlf-prefix-map (kbd "C-x C-v") vlf-mode-map)))
 
 (use-package yasnippet
   :ensure t
@@ -976,6 +1095,8 @@ _d_  Dir                              ^^^^^^_n_   Next err
 
 (use-package zzz-to-char
   :ensure t
+  :config
+  (setq zzz-to-char-reach 800)
   :bind
   (("M-z" . zzz-to-char)))
 
@@ -1074,25 +1195,25 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (defun left-char-message ()
   "Execute 'left-char' with reminder not to use the left arrow key."
   (interactive)
-  (left-char)
+  ;; (left-char)
   (message "%s" "Please use M-a instead of the left arrow key."))
 
 (defun right-char-message ()
   "Execute 'right-char' with reminder not to use the right arrow key."
   (interactive)
-  (right-char)
+  ;; (right-char)
   (message "%s" "Please use M-d instead of the right arrow key."))
 
 (defun previous-line-message ()
   "Execute 'previous-line' with reminder not to use the up arrow key."
   (interactive)
-  (previous-line)
+  ;; (previous-line)
   (message "%s" "Please use M-w instead of the up arrow key."))
 
 (defun next-line-message ()
   "Execute 'next-line' with reminder not to use the down arrow key."
   (interactive)
-  (next-line)
+  ;; (next-line)
   (message "%s" "Please use M-s instead of the down arrow key."))
 
 (defun rename-file-and-buffer ()
@@ -1138,6 +1259,14 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (insert ")")
   (exchange-point-and-mark))
 
+(defun parenthesize-end-of-line ()
+  "Insert parentheses at end of line."
+  (interactive)
+  (set-mark (point))
+  (end-of-line)
+  (insert ")")
+  (exchange-point-and-mark))
+
 (defun double-quotes-to-end-of-line ()
   "Select current position to end of line as region and insert double quotes."
   (interactive)
@@ -1156,13 +1285,37 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (insert "'")
   (exchange-point-and-mark))
 
+(defun square-brackets-to-end-of-line ()
+  "Select current position to end of line as region and insert square brackets."
+  (interactive)
+  (insert "[")
+  (set-mark (point))
+  (end-of-line)
+  (insert "]")
+  (exchange-point-and-mark))
+
+(defun angular-brackets-to-end-of-line ()
+  "Select current position to end of line as region and insert angular brackets."
+  (interactive)
+  (insert "<")
+  (set-mark (point))
+  (end-of-line)
+  (insert ">")
+  (exchange-point-and-mark))
+
 (defun custom-delete ()
   "Delete with custom (more complex) behavior.  See function body for more information."
   (interactive)
   (if mark-active
       ;; If region is active,
       ;; then delete region
-      (delete-region (region-beginning) (region-end))
+      (if (eq (line-number-at-pos (region-beginning)) (line-number-at-pos (region-end)))
+	  ;; If region contained in single line,
+	  ;; then sp-delete-region
+	  (sp-delete-region (region-beginning) (region-end))
+	;; If region contained in multiple lines,
+	;; then regular delete-region
+	(delete-region (region-beginning) (region-end)))
     (if (or
 	 (sp--looking-back (sp--get-opening-regexp (sp--get-pair-list-context 'navigate)))
 	 (sp--looking-back (sp--get-closing-regexp (sp--get-pair-list-context 'navigate))))
@@ -1231,15 +1384,15 @@ _d_  Dir                              ^^^^^^_n_   Next err
   "Multiple cursors with custom behavior."
   (interactive)
   (when mark-active
-      (mc/mark-next-like-this 1)
-      (mc/cycle-forward)))
+    (mc/mark-next-like-this 1)
+    (mc/cycle-forward)))
 
 (defun custom-mc-select-previous ()
   "Multiple cursors with custom behavior."
   (interactive)
   (when mark-active
-      (mc/mark-previous-like-this 1)
-      (mc/cycle-backward)))
+    (mc/mark-previous-like-this 1)
+    (mc/cycle-backward)))
 
 (defun org-custom-close ()
   "Close current headings upward.  If last call was org-custom-close, close parent heading."
@@ -1251,10 +1404,10 @@ _d_  Dir                              ^^^^^^_n_   Next err
     (outline-hide-leaves)))
 
 (defun swiper-input ()
-  "Either symbol at point or empty string if no symbol at point."
+  "Either word at point or empty string if no symbol at point."
   (interactive)
   (if (symbol-at-point)
-      (format "%s" (thing-at-point 'symbol))
+      (format "%s" (sexp-at-point))
     ""))
 
 (defun swiper-mc-custom ()
@@ -1263,13 +1416,39 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (hydra-mc/body)
   (swiper-mc))
 
-;; Set advice
+(defun toggle-transparency ()
+  "Toggle transparency on and off."
+  (interactive)
+  (let ((alpha (frame-parameter nil 'alpha)))
+    (set-frame-parameter
+     nil 'alpha
+     (if (eql (cond ((numberp alpha) alpha)
+                    ((numberp (cdr alpha)) (cdr alpha))
+                    ;; Also handle undocumented (<active> <inactive>) form.
+                    ((numberp (cadr alpha)) (cadr alpha)))
+              100)
+         '(85 . 50) '(100 . 100)))))
+
 ;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
-(defadvice find-file (after find-file-sudo activate)
-  "Find file as root if necessary."
-  (unless (and buffer-file-name
-               (file-writable-p buffer-file-name))
+(defun sudo-edit (&optional arg)
+  "Edit currently visited file as root.
+
+With a prefix ARG prompt for a file to visit.
+Will also prompt for a file to visit if current
+buffer is not visiting a file."
+  (interactive "P")
+  (if (or arg (not buffer-file-name))
+      (find-file (concat "/sudo:root@localhost:"
+                         (ido-read-file-name "Find file(as root): ")))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
+;; Set advice (fix???)
+;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
+;; (defadvice find-file (after find-file-sudo activate)
+;;   "Find file as root if necessary."
+;;   (unless (and buffer-file-name
+;;                (file-writable-p buffer-file-name))
+;;     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
 ;; https://unix.stackexchange.com/questions/48289/emacs-m-x-query-replace-wrap-around-the-document
 (defadvice query-replace
@@ -1288,21 +1467,27 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (bind-keys*
  ((kbd "C-q") . scroll-down-command)
  ((kbd "C-S-q") . switch-to-prev-buffer)
+ ;; Check why behavior is "reversed" in some contexts
+ ((kbd "C-M-q") . sp-beginning-of-sexp)
  ((kbd "C-e") . scroll-up-command)
  ((kbd "C-S-e") . switch-to-next-buffer)
+ ((kbd "C-M-e") . sp-end-of-sexp)
  ((kbd "M-v") . yank-pop)
  ((kbd "C-M-v") . yank-pop-reverse)
  ((kbd "M-f") . goto-line)
  ((kbd "C-z") . undo)
- ((kbd "C-M-z") . undo-tree-redo)
+ ((kbd "C-S-z") . undo-tree-redo)
  ((kbd "M-c") . comment-dwim)
  ((kbd "M-r") . query-replace-regexp)
  ((kbd "C-x <tab>") . indent-region-or-buffer)
  ;; ((kbd "C-;") . (lambda() (interactive) (if (not mark-active) (er/mark-word)) (mc/mark-all-like-this) (hydra-mc/body)))
  ((kbd "C-(") . parenthesize-to-beginning-of-line)
  ((kbd "C-)") . parenthesize-to-end-of-line)
+ ((kbd "M-)") . parenthesize-end-of-line)
  ((kbd "C-\"") . double-quotes-to-end-of-line)
  ((kbd "C-'") . single-quotes-to-end-of-line)
+ ((kbd "C-]") . square-brackets-to-end-of-line)
+ ((kbd "C->") . angular-brackets-to-end-of-line)
  ((kbd "C-k") . kill-line)
  ((kbd "<C-S-escape>") . server-force-delete)
  ;; ((kbd "C-x C-f") . helm-find-files)
@@ -1350,8 +1535,8 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (global-set-key (kbd "C-M-d") 'end-of-line)
 (global-set-key (kbd "C-M-r") 'repeat-complex-command)
 (global-set-key (kbd "C-l") 'copy-lines)
-(global-set-key (kbd "C-M-e") 'end-of-defun)
-(global-set-key (kbd "C-M-q") 'beginning-of-defun)
+(global-set-key (kbd "<C-S-up>") 'upcase-dwim)
+(global-set-key (kbd "<C-S-down>") 'downcase-dwim)
 
 ;; Set non-overriding non-package mode-specific bindings
 ;; (add-hook 'latex-mode-hook
@@ -1370,9 +1555,11 @@ _d_  Dir                              ^^^^^^_n_   Next err
 (add-hook 'find-file-hook 'pdf-view-hook)
 
 (defun minibuffer-setup-avoid-gc-hook ()
+  "Extend garbage collection threshold when loading buffer."
   (setq gc-cons-threshold most-positive-fixnum))
 
 (defun minibuffer-exit-restore-gc-hook ()
+  "Restore garbage collection threshold once done loading buffer."
   (setq gc-cons-threshold 800000))
 (add-hook 'minibuffer-setup-hook #'minibuffer-setup-avoid-gc-hook)
 (add-hook 'minibuffer-exit-hook #'minibuffer-exit-restore-gc-hook)
