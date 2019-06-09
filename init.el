@@ -1,7 +1,8 @@
 ;;; package --- Summary
 
 ;;; Commentary:
-;;; investigate if package-archive contents yas-classic snippets interferes with package-refresh-contents
+;; (define-key polymode-mode-map (kbd "M-n M-e") ess-eval-line-and-step)
+;; (define-key polymode-mode-map (kbd "M-n C-e") rmd-send-buffer)
 ;;; Check color to LSP
 ;;; Add C-S-c tex-compile to LaTeX
 
@@ -61,7 +62,7 @@
  '(kept-old-versions 2)
  '(package-selected-packages
    (quote
-    (org-bullets poly-markdown ess apropospriate-theme ag pdf-tools vlf company-tabnine haskell-mode package-build shut-up epl git commander f dash s cask zzz-to-char yasnippet-snippets yasnippet undo-tree spacemacs-theme smartparens rainbow-delimiters projectile powerline multiple-cursors magit lsp-ui json-mode iedit hydra hungry-delete hide-lines goto-chg flycheck-rust flycheck fill-column-indicator expand-region dashboard csv-mode counsel company-quickhelp company-lsp company color-identifiers-mode cargo bm avy use-package diminish))))
+    (origami web-mode js2-mode zzz-to-char yasnippet-snippets vlf use-package spacemacs-theme smartparens rainbow-delimiters projectile powerline pdf-tools org-bullets multiple-cursors magit lsp-ui json-mode iedit hydra hungry-delete hide-lines haskell-mode goto-chg flycheck-rust fill-column-indicator expand-region emojify diminish dashboard csv-mode counsel company-tabnine company-quickhelp company-lsp color-identifiers-mode cask cargo bm apropospriate-theme ag))))
 
 ;; Set non-package faces (colors)
 (custom-set-faces
@@ -188,14 +189,14 @@
 ^Commands^
 ^^^^^^-------------------------
 _b_ build _n_ new    _t_ test
-_c_ clean _r_ repeat _u_ update
+_c_ clean _r_ run _u_ update
 _i_ init  _s_ search
     "
-    ("b" cargo-process-build :exit t)
+    ("b" cargo-process-build)
     ("c" cargo-process-clean :exit t)
     ("i" cargo-process-init :exit t)
     ("n" cargo-process-new :exit t)
-    ("r" cargo-process-repeat :exit t)
+    ("r" cargo-process-run :exit t)
     ("s" cargo-process-search :exit t)
     ("t" cargo-process-test :exit t)
     ("u" cargo-process-update :exit t)))
@@ -295,12 +296,22 @@ _i_ init  _s_ search
   :config
   (add-hook 'after-init-hook #'global-emojify-mode))
 
-(use-package ess
-  :ensure t
-  :bind
-  (:map inferior-ess-r-mode-map
-  	("<up>" . comint-previous-input)
-  	("<down>" . comint-next-input)))
+;; (use-package ess
+;;   :ensure t)
+
+;; ;; https://emacs.stackexchange.com/questions/44880/use-package-bind-not-working-as-expected
+;; (use-package ess-site
+;;   :ensure ess)
+
+;; ;; https://emacs.stackexchange.com/questions/44880/use-package-bind-not-working-as-expected
+;; (use-package ess-inf
+;;   :bind
+;;   (:map inferior-ess-r-mode-map
+;;   	("<up>" . comint-previous-input)
+;;   	("<down>" . comint-next-input)
+;;   	("C-a" . sp-backward-sexp)
+;;   	("C-d" . sp-forward-sexp)
+;; 	("TAB" . ess-insert-assign)))
 
 (use-package expand-region
   :ensure t
@@ -430,7 +441,22 @@ Normal  _s_ String _d_ Delete
 
   :config
   ;; Turn on global-flycheck-mode
-  (add-hook 'after-init-hook #'global-flycheck-mode))
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+
+  ;; codewinds.com/blog/2015-04-02-emacs-flycheck-eslint-jsx.html#install_eslint_and_babel
+  (setq-default flycheck-disabled-checkers
+		(append flycheck-disabled-checkers
+			'(javascript-jshint)))
+
+  (flycheck-add-mode 'javascript-eslint 'js2-mode)
+  (flycheck-add-mode 'javascript-eslint 'js2-jsx-mode)
+
+  (setq-default flycheck-temp-prefix ".flycheck")
+
+  ;; This may not be necessary
+  (setq-default flycheck-disabled-checkers
+		(append flycheck-disabled-checkers
+			'(json-jsonlist))))
 
 (use-package flycheck-rust
   :ensure t
@@ -617,11 +643,19 @@ Normal  _s_ String _d_ Delete
    ("TAB" . ivy-alt-done)
    ("<C-tab>" . ivy-backward-kill-word)))
 
-;; (use-package js2-mode
-;;   :ensure t
-;;   :config
-;;   ;; Enable js2-mode as major mode for JavaScript
-;;   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode)))
+(use-package js2-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+  (add-to-list 'interpreter-mode-alist '("node" . js2-mode))
+  ;; lsp not activating rn for js2-jsx-mode for some reason
+  (add-to-list 'auto-mode-alist '("\\.jsx?\\'" . js2-mode))
+
+  (setq js2-basic-offset 2)
+
+  (setq js2-mode-hook
+	'(lambda () (progn
+		      (set-variable 'indent-tabs-mode nil)))))
 
 (use-package json-mode
   :ensure t
@@ -772,6 +806,7 @@ Normal  _s_ String _d_ Delete
 (use-package org
   :ensure t
   :config
+  (setq org-export-preserve-breaks t)
   (setq org-catch-invisible-edits 1)
   (setq org-startup-folded 1)
   (defhydra hydra-org
@@ -881,19 +916,26 @@ _C-r_ Ring  _w_ Widen
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
-;; (use-package origami
-;;   :ensure t
-;;   :bind
-;;   (:map origami-mode-map
-;; 	("<C-tab>" . origami-recursively-toggle-node)
-;; 	("<C-S-iso-lefttab>" . origami-open-all-nodes)
-;; 	("<C-M-tab>" . origami-close-all-nodes)))
-
-(use-package poly-markdown
+(use-package origami
   :ensure t
-  :config
-  (add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode)
-  (add-to-list 'auto-mode-alist '("\\.Rmd" . poly-markdown-mode))))
+  :bind
+  (:map origami-mode-map
+	("<C-tab>" . origami-recursively-toggle-node)
+	("<C-S-iso-lefttab>" . origami-open-all-nodes)
+	("<C-M-tab>" . origami-close-all-nodes)))
+
+;; (use-package poly-markdown
+;;   :ensure t
+;;   :config
+;;   (add-to-list 'auto-mode-alist '("\\.Rmd\\'" . poly-markdown-mode))
+  
+;;   ;; :bind
+;;   ;; not working?
+;;   ;; (:map poly-markdown-mode-map
+;;   ;; 	("M-n M-e" . ess-eval-line-and-step)
+;;   ;; 	("M-n C-e" . rmd-send-buffer)
+;;   ;; 	)
+;;   )
 
 (use-package powerline
   :ensure t
@@ -1073,6 +1115,11 @@ _d_  Dir                              ^^^^^^_n_   Next err
   (require 'vlf-setup)
   (eval-after-load "vlf"
     '(define-key vlf-prefix-map (kbd "C-x C-v") vlf-mode-map)))
+
+(use-package web-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode)))
 
 (use-package yasnippet
   :ensure t
@@ -1442,6 +1489,22 @@ buffer is not visiting a file."
                          (ido-read-file-name "Find file(as root): ")))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
+;; https://stackoverflow.com/questions/40894202/execute-all-r-chunks-at-once-from-an-rmd-document
+(defun rmd-send-buffer (arg)
+  "Send all R code blocks in buffer to ess process.
+With prefix ARG send regions above point."
+  (interactive "P")
+  (save-restriction
+    (widen)
+    (save-excursion
+      (pm-map-over-spans
+       'ess-eval-region
+       (point-min)
+       (if arg (point) (point-max))
+       nil
+       nil
+       'R))))
+
 ;; Set advice (fix???)
 ;; http://emacsredux.com/blog/2013/04/21/edit-files-as-root/
 ;; (defadvice find-file (after find-file-sudo activate)
@@ -1535,8 +1598,11 @@ buffer is not visiting a file."
 (global-set-key (kbd "C-M-d") 'end-of-line)
 (global-set-key (kbd "C-M-r") 'repeat-complex-command)
 (global-set-key (kbd "C-l") 'copy-lines)
-(global-set-key (kbd "<C-S-up>") 'upcase-dwim)
-(global-set-key (kbd "<C-S-down>") 'downcase-dwim)
+(global-set-key (kbd "<C-up>") 'upcase-dwim)
+(global-set-key (kbd "<C-down>") 'downcase-dwim)
+(global-set-key (kbd "M-DEL") 'backward-delete-char)
+(global-set-key (kbd "C-M-S-e") 'eval-region)
+(global-set-key (kbd "C-M-S-t") 'toggle-truncate-lines)
 
 ;; Set non-overriding non-package mode-specific bindings
 ;; (add-hook 'latex-mode-hook
