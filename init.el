@@ -62,7 +62,7 @@
  '(kept-old-versions 2)
  '(package-selected-packages
    (quote
-    (origami web-mode js2-mode zzz-to-char yasnippet-snippets vlf use-package spacemacs-theme smartparens rainbow-delimiters projectile powerline pdf-tools org-bullets multiple-cursors magit lsp-ui json-mode iedit hydra hungry-delete hide-lines haskell-mode goto-chg flycheck-rust fill-column-indicator expand-region emojify diminish dashboard csv-mode counsel company-tabnine company-quickhelp company-lsp color-identifiers-mode cask cargo bm apropospriate-theme ag))))
+    (protobuf-mode origami web-mode js2-mode zzz-to-char yasnippet-snippets vlf use-package spacemacs-theme smartparens rainbow-delimiters projectile powerline pdf-tools org-bullets multiple-cursors magit lsp-ui json-mode iedit hydra hungry-delete hide-lines haskell-mode goto-chg flycheck-rust fill-column-indicator expand-region emojify diminish dashboard csv-mode counsel company-tabnine company-quickhelp company-lsp color-identifiers-mode cask cargo bm apropospriate-theme ag))))
 
 ;; Set non-package faces (colors)
 (custom-set-faces
@@ -1001,6 +1001,9 @@ _d_  Dir                              ^^^^^^_n_   Next err
     ("p"   previous-error)
     ("n"   next-error)
     ("C-o" hydra-projectile-other-window/body :exit t)))
+
+(use-package protobuf-mode
+  :ensure t)
 
 (use-package rainbow-delimiters
   :ensure t
