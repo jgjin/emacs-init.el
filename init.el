@@ -95,30 +95,6 @@
 (use-package ag
   :ensure t)
 
-;; (use-package apropospriate-theme
-;;   :ensure t
-;;   :defer t
-;;   :init
-;;   (defun load-apropospriate-light-for-new-frames (&optional frame)
-;;     "Load apropospriate-light theme for new frames."
-;;     (interactive)
-;;     (with-selected-frame (or frame (selected-frame))
-;;       (load-theme 'apropospriate-light t)))
-
-;;   (defun load-apropospriate-dark-for-new-frames (&optional frame)
-;;     "Load apropospriate-dark theme for new frames."
-;;     (interactive)
-;;     (with-selected-frame (or frame (selected-frame))
-;;       (load-theme 'apropospriate-dark t)))
-  
-;;   (if (daemonp)
-;;       (add-hook 'after-make-frame-functions
-;; 		'load-apropospriate-dark-for-new-frames))
-;;   (load-theme 'apropospriate-dark t)
-;;   ;; (set-face-attribute 'default nil :background "#fff4ee")
-;;   ;; (set-face-background 'font-lock-comment-face "#f5eae5")
-;;   )
-
 (use-package avy
   :ensure t
   :config
@@ -201,11 +177,11 @@ _i_ init  _s_ search
     ("t" cargo-process-test :exit t)
     ("u" cargo-process-update :exit t)))
 
-(use-package color-identifiers-mode
-  :ensure t
-  :diminish color-identifiers-mode
-  :config
-  (global-color-identifiers-mode 1))
+;; (use-package color-identifiers-mode
+;;   :ensure t
+;;   :diminish color-identifiers-mode
+;;   :config
+;;   (global-color-identifiers-mode 1))
 
 (use-package company
   :ensure t
@@ -219,12 +195,11 @@ _i_ init  _s_ search
   (setq company-minimum-prefix-length 1)
   (setq company-show-numbers t))
 
-;; (use-package company-lsp
-;;   :ensure t
-;;   :commands company-lsp
-;;   :config
-;;   ;; Add LSP to company backends
-;;   (push 'company-lsp company-backends))
+(use-package company-lsp
+  :ensure t
+  :config
+  ;; Add LSP to company backends
+  (push 'company-lsp company-backends))
 
 (use-package company-quickhelp
   :ensure t
@@ -235,11 +210,6 @@ _i_ init  _s_ search
   :bind
   (:map company-active-map
         ("RET" . nil)))
-
-;; (use-package company-tabnine
-;;   :ensure t
-;;   :config
-;;   (add-to-list 'company-backends #'company-tabnine))
 
 (use-package counsel
   :ensure t
@@ -285,9 +255,6 @@ _i_ init  _s_ search
   ;; Overrides M-s as a prefix key
   (:map dired-mode-map
 	("M-s" . next-line)))
-
-;; (use-package ein
-;;   :ensure t)
 
 ;; On first installation, restart emacs --daemon and respond yes to downloading emojis
 ;; Emojis will be put in .emacs.d/emojis/
@@ -436,27 +403,22 @@ Normal  _s_ String _d_ Delete
 (use-package flycheck
   :ensure t
   :diminish flycheck-mode
-  :init
-  (require 'semantic/bovine/gcc)
-
+  :init (global-flycheck-mode)
   :config
-  ;; Turn on global-flycheck-mode
-  (add-hook 'after-init-hook #'global-flycheck-mode)
+  ;; ;; codewinds.com/blog/2015-04-02-emacs-flycheck-eslint-jsx.html#install_eslint_and_babel
+  ;; (setq-default flycheck-disabled-checkers
+  ;; 		(append flycheck-disabled-checkers
+  ;; 			'(javascript-jshint)))
 
-  ;; codewinds.com/blog/2015-04-02-emacs-flycheck-eslint-jsx.html#install_eslint_and_babel
-  (setq-default flycheck-disabled-checkers
-		(append flycheck-disabled-checkers
-			'(javascript-jshint)))
+  ;; (flycheck-add-mode 'javascript-eslint 'js2-mode)
+  ;; (flycheck-add-mode 'javascript-eslint 'js2-jsx-mode)
 
-  (flycheck-add-mode 'javascript-eslint 'js2-mode)
-  (flycheck-add-mode 'javascript-eslint 'js2-jsx-mode)
-
-  (setq-default flycheck-temp-prefix ".flycheck")
-
-  ;; This may not be necessary
-  (setq-default flycheck-disabled-checkers
-		(append flycheck-disabled-checkers
-			'(json-jsonlist))))
+  ;; ;; This may not be necessary
+  ;; (setq-default flycheck-disabled-checkers
+  ;; 		(append flycheck-disabled-checkers
+  ;; 			'(json-jsonlist)))
+  
+  (setq-default flycheck-temp-prefix ".flycheck"))
 
 (use-package flycheck-rust
   :ensure t
@@ -475,8 +437,8 @@ Normal  _s_ String _d_ Delete
   ("C-<" . goto-last-change)
   ("C->" . goto-last-change-reverse))
 
-(use-package haskell-mode
-  :ensure t)
+;; (use-package haskell-mode
+;;   :ensure t)
 
 ;; (use-package helm
 ;;   :ensure t
@@ -643,19 +605,19 @@ Normal  _s_ String _d_ Delete
    ("TAB" . ivy-alt-done)
    ("<C-tab>" . ivy-backward-kill-word)))
 
-(use-package js2-mode
-  :ensure t
-  :config
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-  (add-to-list 'interpreter-mode-alist '("node" . js2-mode))
-  ;; lsp not activating rn for js2-jsx-mode for some reason
-  (add-to-list 'auto-mode-alist '("\\.jsx?\\'" . js2-mode))
+;; (use-package js2-mode
+;;   :ensure t
+;;   :config
+;;   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+;;   (add-to-list 'interpreter-mode-alist '("node" . js2-mode))
+;;   ;; lsp not activating rn for js2-jsx-mode for some reason
+;;   (add-to-list 'auto-mode-alist '("\\.jsx?\\'" . js2-mode))
 
-  (setq js2-basic-offset 2)
+;;   (setq js2-basic-offset 2)
 
-  (setq js2-mode-hook
-	'(lambda () (progn
-		      (set-variable 'indent-tabs-mode nil)))))
+;;   (setq js2-mode-hook
+;; 	'(lambda () (progn
+;; 		      (set-variable 'indent-tabs-mode nil)))))
 
 (use-package json-mode
   :ensure t
@@ -663,37 +625,20 @@ Normal  _s_ String _d_ Delete
   (:map json-mode-map
         ("M-f" . jsons-print-path)))
 
-;; (use-package lsp-java
-;;   :ensure t
-;;   :config
-;;   (add-hook 'java-mode-hook #'lsp-java-enable)
-;; (setq lsp-java--workspace-folders (list "~/fakeproj"
-;;                                         "~/fakeproj2")))
-
-;; https://vxlabs.com/2018/06/08/python-language-server-with-emacs-and-lsp-mode/
+;; https://github.com/emacs-lsp/lsp-mode
 (use-package lsp-mode
-  :ensure t
+  :hook (prog-mode . lsp)
   :commands lsp
-  :diminish eldoc-mode
-  :init
-  (require 'lsp-clients)
-  
   :config
-  ;; Turn on LSP automatically for all programming modes
-  (add-hook 'prog-mode-hook #'lsp)
+  (setq lsp-prefer-flymake nil)
 
-  ;; (lsp-define-stdio-client lsp-R "R"
-  ;;                          (lambda () default-directory)
-  ;; 			   '("R" "--slave" "-e" "languageserver::run()"))
-  ;; (add-hook 'R-mode-hook #'lsp-R-enable)
-  
   (set-face-attribute 'lsp-face-highlight-read nil
 		      :background "#555599")
   (set-face-attribute 'lsp-face-highlight-textual nil
 		      :background "#555599")
   (set-face-attribute 'lsp-face-highlight-write nil
 		      :background "#008787")
-
+  
   (use-package lsp-ui
     :ensure t
     :commands lsp-ui-mode
@@ -704,10 +649,6 @@ Normal  _s_ String _d_ Delete
     (setq lsp-ui-peek-enable t)
     ;; Enable sideline
     (setq lsp-ui-sideline-enable t)
-    ;; Ignore duplicates
-    (setq lsp-ui-sideline-ignore-duplicate t)
-    ;; Enable flycheck and other higher-level UI modules
-    (add-hook 'lsp-mode-hook 'lsp-ui-mode)
     
     :bind
     (:map lsp-ui-mode-map
@@ -715,9 +656,7 @@ Normal  _s_ String _d_ Delete
           ("C-M-r" . #'lsp-ui-peek-find-references)))
 
   (use-package company-lsp
-    :commands company-lsp
-    :config
-    (push 'company-lsp company-backends)))
+    :commands company-lsp))
 
 (use-package magit
   :ensure t
@@ -1028,9 +967,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
    :test "cargo test"))
 
 (use-package scala-mode
-  :interpreter
-  ;; Set scala-mode to interpret .scala files
-  ("scala" . scala-mode))
+  :mode "\\.s\\(cala\\|bt\\)$")
 
 (use-package smartparens
   :ensure t
