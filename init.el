@@ -1394,7 +1394,7 @@ _d_  Dir                              ^^^^^^_n_   Next err
   "Either word at point or empty string if no symbol at point."
   (interactive)
   (if (symbol-at-point)
-      (format "%s" (sexp-at-point))
+      (format "%s" (symbol-at-point))
     ""))
 
 (defun swiper-mc-custom ()
